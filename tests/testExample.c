@@ -1,5 +1,4 @@
 #include "TestExample.h"
-#include "ETestStatus.h"
 
 ETestStatus testExampleSuccess()
 {
