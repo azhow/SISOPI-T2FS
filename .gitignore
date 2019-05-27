@@ -1,0 +1,10 @@
+.vscode
+*.o
+/bin/
+*~
+*.a
+*.vcxproj
+.vs/
+*.user
+*.filters
+extra/
