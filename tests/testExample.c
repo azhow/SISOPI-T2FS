@@ -1,11 +1,12 @@
 #include "TestExample.h"
+#include "ETestStatus.h"
 
-int testExampleSuccess(int a, int b)
+ETestStatus testExampleSuccess()
 {
-	return a * b;
+	return TestSuccess;
 }
 
-int testExampleFailure(int a, int b)
+ETestStatus testExampleFailure()
 {
-	return a + b;
+	return TestError;
 }
