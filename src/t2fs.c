@@ -1,13 +1,18 @@
 
 /**
 */
+#include "EOperationStatus.h"
 #include "t2fs.h"
 
 /*-----------------------------------------------------------------------------
 Função:	Informa a identificação dos desenvolvedores do T2FS.
 -----------------------------------------------------------------------------*/
 int identify2 (char *name, int size) {
-	return -1;
+	// Operation status to be returned
+	EOperationStatus returnCode = OpUknownError;
+
+    strncpy (name, "Arthur Zachow - 00277951\nEmily Calvet - 00242277", size);
+    return returnCode = OpSuccess;
 }
 
 /*-----------------------------------------------------------------------------
