@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include "testMain.h"
+#include "t2fs.h"
 #include "ETestStatus.h"
-#include "TestExample.h"
+#include "TestFormat2.h"
 
 ETestStatus runAllTests()
 {
@@ -11,25 +13,9 @@ ETestStatus runAllTests()
 
 	// example test success
 	// Currently running test 
-	printf("example_test:\t");
+	printf("format2_test:\t");
 	// Run the test
-	currentTestStatus = testExampleSuccess();
-	// Check if test runned successfully
-	if (currentTestStatus != TestSuccess)
-	{
-		overallTestStatus -= TestError;
-		printf("FAILED\n");
-	}
-	else
-	{
-		printf("SUCCESS\n");
-	}
-
-	// example test failure
-	// Currently running test 
-	printf("example_test:\t");
-	// Run the test
-	currentTestStatus = testExampleFailure();
+	currentTestStatus = testFormat2();
 	// Check if test runned successfully
 	if (currentTestStatus != TestSuccess)
 	{

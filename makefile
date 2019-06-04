@@ -5,7 +5,7 @@ LIB_DIR=./lib/
 INC_DIR=./include/
 BIN_DIR=./bin/
 SRC_DIR=./src/
-TEST_DIR=./teste/
+TEST_DIR=./tests/
 # Flags
 CFLAGS=-I$(LIB_DIR) -I$(INC_DIR)
 DBFLAGS=-ggdb3 -O0 -g -Wall -Werror
@@ -67,7 +67,7 @@ test_process: $(TEST_OBJ) $(OBJ)
 	@$(CC) -o $(TEST_EXE) $(TEST_OBJ) $(OBJ)
 
 # Compiles the .c into .o for the tests
-./bin/%.o: ./teste/%.c
+./bin/%.o: ./tests/%.c
 	@echo "Compiling Test" $@ 
 	@mkdir -p $(BIN_DIR)
 	@$(CC) -o $@ -c $< $(CFLAGS) $(FLAGS)
