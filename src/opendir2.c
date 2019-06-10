@@ -20,8 +20,14 @@ DIR2 opendir2(char *pathname)
 	DIR2 returnHandle = -1;
 
 	// Should transverse the directories to find the given path
-	// if found, then assign the handle and do the other related operations
-	// like finding a new unassigned handle
+	if (exists(pathname))
+	{
+		// if found, then assign the handle and do the other related operations
+		// like finding a new unassigned handle
+		//getFreeHandle();
+		int i = 0;
+		i++;
+	}
 
 	// Return
 	return returnHandle;

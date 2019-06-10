@@ -293,10 +293,4 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 -----------------------------------------------------------------------------*/
 int ln2(char *linkname, char *filename);
 
-
-
-
-
-
-
 #endif

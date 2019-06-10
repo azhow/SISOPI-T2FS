@@ -22,11 +22,11 @@ int readdir2(DIR2 handle, DIRENT2 *dentry)
 	// Status of the operation
 	EOperationStatus operationStatus = OpUknownError;
 	// Validade handle
-	if (validadeHandle(handle))
-	{
+	//if (validadeHandle(handle))
+	//{
 		// Get the handle content and assign it to the entry reference
-		operationStatus = getHandleContent(handle, dentry);
-	}
+	//	operationStatus = getHandleContent(handle, dentry);
+	//}
 
 	// Return
 	return operationStatus;
