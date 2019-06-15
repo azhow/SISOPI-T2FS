@@ -1,8 +1,6 @@
 #ifndef __direntry_h__
 #define __direntry_h__
 
-#include "EOperationStatus.h"
-
 // Pragma directive to tell the compiler to not add any padding, so the struct has a predictable size 256
 #pragma pack(push, 1)
 

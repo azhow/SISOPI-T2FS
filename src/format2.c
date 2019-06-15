@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include "t2fs.h"
 #include "utils.h"
-#include "direntry.h"
-#include "EOperationStatus.h"
+#include "superblock.h"
 #include "apidisk.h"
+
+#include <stdio.h>
 
 /*-----------------------------------------------------------------------------
 Função:	Formata um disco virtual
@@ -17,32 +17,31 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 -----------------------------------------------------------------------------*/
 int format2(int sectors_per_block)
 {
-	// TODO fomat disk with our options
-	// We have 4000 sectors in the disk
-	DirEntry* dirEntry = calloc(1, sizeof(DirEntry));
-	strcat(dirEntry->m_name, "banana batata");
-	dirEntry->m_filetype = 0x01;
-	dirEntry->m_size = 0;
-	dirEntry->m_iBlockAddress = 200;
-	dirEntry->m_parentAddress = 100;
-	dirEntry->m_ownAddress = 150;
-	dirEntry->m_empty = 56;
+	// Operation status
+	EOperationStatus retValue = EOpUnknownError;
 
-	unsigned char buff[256] = { 0 };
-	serialize_DirEntry(dirEntry, buff);
-	write_sector(100, buff);
+	// The FS only makes sense when sectors per block is bigger than 0
+	if (sectors_per_block > 0)
+	{
+		Superblock* psSuperblock = malloc(sizeof(Superblock));
+		psSuperblock->m_sectorsPerBlock = sectors_per_block;
+		psSuperblock->m_rootAddress = 1;
 
-	unsigned char buff2[256] = { 0 };
-	read_sector(100, buff2);
-	DirEntry* readDir = deserialize_DirEntry(buff2);
-	printf("%s\n", readDir->m_name);
-	printf("%d\n", readDir->m_filetype);
-	printf("%d\n", readDir->m_size);
-	printf("%d\n", readDir->m_iBlockAddress);
-	printf("%d\n", readDir->m_parentAddress);
-	printf("%d\n", readDir->m_ownAddress);
-	printf("%d\n", readDir->m_empty);
+		unsigned char* pBuffer = calloc(SECTOR_SIZE, sizeof(char));
 
+		// Read sector MBR_SECTOR
+		// MUST preserve the old contents
+		if (read_sector(MBR_SECTOR, pBuffer) == EOpSuccess)
+		{
+			// Serializes the superblock
+			serialize_Superblock(psSuperblock, pBuffer);
+			// Write sector
+			retValue = write_sector(MBR_SECTOR, pBuffer);
+		}
 
-	return 0;
+		// Free buffer
+		free(pBuffer);
+	}
+
+	return retValue;
 }

@@ -19,7 +19,7 @@ typedef struct {
 } OpenFileTable;
 
 // Verifies the validity of a given handle
-TBool validadeHandle(DIR2 handle);
+TBool validateHandle(DIR2 handle);
 
 // Get a valid handle dir entry, used in the readdir2 function, returns the entry read in the pointer
 // Assumes a valid handle
