@@ -20,7 +20,7 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 int readdir2(DIR2 handle, DIRENT2 *dentry)
 {
 	// Status of the operation
-	EOperationStatus operationStatus = OpUknownError;
+	EOperationStatus operationStatus = EOpUnknownError;
 	// Validade handle
 	//if (validadeHandle(handle))
 	//{

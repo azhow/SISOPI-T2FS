@@ -1,9 +1,10 @@
 #include <string.h>
 #include "utils.h"
+#include "direntry.h"
 
 // Definition of the current path (should initialize it rather)
 // Current working path
-char g_currentPath[MAX_FILE_NAME_SIZE + 1];
+char g_currentPath[32];
 
 #include <stdio.h>
 
@@ -54,6 +55,15 @@ TBool exists(char *pathname)
 	{
 		// 
 	}
+
+	DirEntry dirEnt;
+	dirEnt.m_filetype = 0x01;
+	printf("DirEntry size: %d\n", sizeof(dirEnt));
+	printf("m_name: %d\n", sizeof(dirEnt.m_name));
+	printf("m_filetype: %d\n", sizeof(dirEnt.m_filetype));
+	printf("m_size: %d\n", sizeof(dirEnt.m_size));
+	printf("m_iBlockAddress: %d\n", sizeof(dirEnt.m_iBlockAddress));
+	printf("m_entries: %d\n", sizeof(dirEnt.m_entries));
 
 	return result;
 }

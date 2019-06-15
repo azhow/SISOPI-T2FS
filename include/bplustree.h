@@ -1,3 +1,6 @@
+#ifndef __bplustree__
+#define __bplustree__
+
 #define Version "1.16.1"
  /*
   *
@@ -139,21 +142,21 @@ typedef struct node {
  * This global variable is initialized to the
  * default value.
  */
-int order = DEFAULT_ORDER;
+int g_order;
 
 /* The queue is used to print the tree in
  * level order, starting from the root
  * printing each entire rank on a separate
  * line, finishing with the leaves.
  */
-node * queue = NULL;
+node* g_queue;
 
 /* The user can toggle on and off the "verbose"
  * property, which causes the pointer addresses
  * to be printed out in hexadecimal notation
  * next to their corresponding keys.
  */
-bool verbose_output = false;
+bool g_verbose_output;
 
 
 // FUNCTION PROTOTYPES.
@@ -196,3 +199,5 @@ node* coalesce_nodes(node* root, node* n, node* neighbor, int neighbor_index, in
 node* redistribute_nodes(node* root, node* n, node* neighbor, int neighbor_index, int k_prime_index, int k_prime);
 node* delete_entry(node* root, node* n, int key, void* pointer);
 node* del(node* root, int key);
+
+#endif //__bplustree__
