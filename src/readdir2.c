@@ -1,6 +1,8 @@
+#include <string.h>
 #include "t2fs.h"
 #include "utils.h"
 #include "EOperationStatus.h"
+#include "openfiletable.h"
 
 /*-----------------------------------------------------------------------------
 Função:	Realiza a leitura das entradas do diretório identificado por "handle".
@@ -21,12 +23,17 @@ int readdir2(DIR2 handle, DIRENT2 *dentry)
 {
 	// Status of the operation
 	EOperationStatus operationStatus = EOpUnknownError;
-	// Validade handle
-	//if (validadeHandle(handle))
-	//{
+	
+	// Check if the handle is valid
+	if ((handle >= 0) && (handle < 9))
+	{
 		// Get the handle content and assign it to the entry reference
-	//	operationStatus = getHandleContent(handle, dentry);
-	//}
+		// Fills the dentry
+		strcpy(dentry->name, ((DirEntry*)((OpenFile*)gp_openFileTable->m_openFiles[handle])->m_openFileDirEntry)->m_name);
+		dentry->fileType = ((DirEntry*)((OpenFile*)gp_openFileTable->m_openFiles[handle])->m_openFileDirEntry)->m_filetype;
+		dentry->fileSize = ((DirEntry*)((OpenFile*)gp_openFileTable->m_openFiles[handle])->m_openFileDirEntry)->m_size;
+		operationStatus = EOpSuccess;
+	}
 
 	// Return
 	return operationStatus;
