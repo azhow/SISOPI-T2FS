@@ -64,5 +64,8 @@ int format2(int sectors_per_block)
 		free(pRoot);
 	}
 
+	// Initializes library
+	initialize();
+
 	return retValue;
 }

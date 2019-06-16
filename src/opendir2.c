@@ -1,5 +1,8 @@
 #include "t2fs.h"
 #include "utils.h"
+#include "direntry.h"
+#include "openfiletable.h"
+#include <stdlib.h>
 
 /*-----------------------------------------------------------------------------
 Função:	Abre um diretório existente no disco.
@@ -16,17 +19,22 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna o identificador
 -----------------------------------------------------------------------------*/
 DIR2 opendir2(char *pathname)
 {
+	// Not initialized library yet
+	if (gp_currentDirEntry == NULL)
+	{
+		initialize();
+	}
+
 	// Returned handle
 	DIR2 returnHandle = -1;
 
+	// DirEntry of the entry we are searching for
+	DirEntry* searchEntry = exists(pathname);
+
 	// Should transverse the directories to find the given path
-	if (exists(pathname))
+	if (searchEntry != NULL)
 	{
-		// if found, then assign the handle and do the other related operations
-		// like finding a new unassigned handle
-		//getFreeHandle();
-		int i = 0;
-		i++;
+		returnHandle = addOpenFileToTable(searchEntry);
 	}
 
 	// Return

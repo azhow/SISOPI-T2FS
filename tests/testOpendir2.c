@@ -2,8 +2,14 @@
 
 ETestStatus testOpendir2()
 {
-	char testPath[] = "/";
-	opendir2(testPath);
+	// Test result
+	ETestStatus testResult = TestError;
 
-	return TestSuccess;
+	char testPath[] = "/c";
+	if (opendir2(testPath) != -1)
+	{
+		testResult = TestSuccess;
+	}
+
+	return testResult;
 }

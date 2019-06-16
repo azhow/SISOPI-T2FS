@@ -5,21 +5,20 @@
 #include "direntry.h"
 #include "iblock.h"
 #include "apidisk.h"
+#include "openfiletable.h"
 
-// Definition of the current path (should initialize it rather)
+// Definition of the current path
 // Current working path
-char g_currentPath[32];
-DirEntry* g_currentDirEntry;
-unsigned int g_rootAddress = 1;
+char g_currentPath[32] = "/";
+DirEntry* gp_currentDirEntry = NULL;
 
-#include <stdio.h>
-
-// Checks the existence of a given path
-TBool 
+// Checks the existence of a given path and assigns the found entry
+DirEntry* 
 exists(char *pathname)
 {
-	// Return of the operation
-	TBool result = false;
+	// DirEntry to start search
+	DirEntry* foundDir = NULL;
+
 	// Path delimiter
 	char delimiter[2] = "/";
 
@@ -29,28 +28,25 @@ exists(char *pathname)
 	// Non empty string
 	if (token != NULL)
 	{
-		// DirEntry to start search
-		DirEntry* searchDir = NULL;
-
 		// Process the first char
 		// If from current dir
 		if ((strlen(token) == 1) && (strncmp(token, ".", 1) == 0))
 		{
 			// Process from current path
-			searchDir = g_currentDirEntry;
+			foundDir = gp_currentDirEntry;
 		}
 		// else if from parent dir
 		else if ((strlen(token) == 2) && (strncmp(token, "..", 2) == 0))
 		{
 			// Process from current path parent
 			// Must be a valid address
-			if (g_currentDirEntry->m_parentAddress != 0)
+			if (gp_currentDirEntry->m_parentAddress != 0)
 			{
 				// Buffer which contains info from disk
 				unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-				if (read_sector(g_currentDirEntry->m_parentAddress, buffer) == EOpSuccess)
+				if (read_sector(gp_currentDirEntry->m_parentAddress, buffer) == EOpSuccess)
 				{
-					searchDir = deserialize_DirEntry(buffer);
+					foundDir = deserialize_DirEntry(buffer);
 				}
 				// Free allocated memory
 				free(buffer);
@@ -62,22 +58,22 @@ exists(char *pathname)
 			// Process from root
 			// Buffer which contains info from disk
 			unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-			if (read_sector(g_rootAddress, buffer) == EOpSuccess)
+			if (read_sector(ROOT_ADDRESS, buffer) == EOpSuccess)
 			{
-				searchDir = deserialize_DirEntry(buffer);
+				foundDir = deserialize_DirEntry(buffer);
 			}
 			// Free allocated memory
 			free(buffer);
 		}
 
 		// Does the current dir exists?
-		TBool currDirExists = false;
+		TBool currDirExists = true;
 
 		// Transverse
 		while ((token != NULL) && currDirExists)
 		{
 			// Searches and returns dirEntry block address of found entry, else 0
-			unsigned int blockAddOfFound = contains(token, searchDir);
+			unsigned int blockAddOfFound = contains(token, foundDir);
 			// If found
 			if (blockAddOfFound != 0)
 			{
@@ -86,7 +82,7 @@ exists(char *pathname)
 				// Update dirEntry
 				if (read_sector(blockAddOfFound, buffer) == EOpSuccess)
 				{
-					searchDir = deserialize_DirEntry(buffer);
+					foundDir = deserialize_DirEntry(buffer);
 				}
 				// Free allocated memory
 				free(buffer);
@@ -101,8 +97,6 @@ exists(char *pathname)
 			}
 			token = strtok(NULL, delimiter);
 		}
-
-		result = currDirExists;
 	}
 	// Might be root directory?
 	else
@@ -110,7 +104,7 @@ exists(char *pathname)
 		// TODO
 	}
 
-	return result;
+	return foundDir;
 }
 
 // Searches and returns dirEntry block address of found entry, else 0
@@ -137,10 +131,10 @@ contains(char* token, DirEntry* searchDir)
 				// If deserialized correctly
 				if (blockToRead != NULL)
 				{
-					// Index of the array
-					unsigned short i = 0;
+					// Index of the array (starts at three because its at this index that start the entries)
+					unsigned short i = 3;
 					// Current content being read
-					unsigned int currContent = (unsigned int)(blockToRead->m_contents);
+					unsigned int currContent = (unsigned int)(blockToRead->m_contents[i]);
 					// Found value?
 					TBool found = false;
 					// While not found and valid value and in bound value
@@ -157,6 +151,8 @@ contains(char* token, DirEntry* searchDir)
 							if (strncmp(token, currDirEntry->m_name, sizeof(currDirEntry->m_name)) == 0)
 							{
 								iBlockOfFound = currDirEntry->m_ownAddress;
+								// Found
+								found = true;
 							}
 							// Else, we shuold look the next entry in the content
 							else
@@ -164,8 +160,16 @@ contains(char* token, DirEntry* searchDir)
 								// Increments
 								i++;
 								// Updates current content
-								currContent = (unsigned int)(blockToRead->m_contents + i);
+								currContent = (unsigned int)(blockToRead->m_contents[i]);
 							}
+							// Free alocated memory
+							free(currDirEntry);
+						}
+						// To avoid infinite loop
+						else
+						{
+							// Increments
+							i++;
 						}
 					}
 				}
@@ -176,4 +180,22 @@ contains(char* token, DirEntry* searchDir)
 	}
 
 	return iBlockOfFound;
+}
+
+// Initializes library
+void
+initialize()
+{
+	// Current path is root
+	strcpy(g_currentPath, "/");
+	// Buffer which contains info from disk
+	unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
+	read_sector(ROOT_ADDRESS, buffer);
+	// Current dirEntry of root
+	gp_currentDirEntry = deserialize_DirEntry(buffer);
+	// Free buffer
+	free(buffer);
+	// Initializes openfiletable
+	gp_openFileTable = calloc(1, sizeof(OpenFileTable));
+	// TODO initialize bitmap of free memory
 }

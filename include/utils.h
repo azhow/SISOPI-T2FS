@@ -13,23 +13,21 @@
 #include "TBool.h"
 
 #define DISK_NUM_SECTORS 4000
+#define ROOT_ADDRESS 1
 
-// Table which contains the open files (max 10 open files simultaneously)
-typedef struct {
-	DIR2 handles[10];
-} OpenFileTable;
-
-// Verifies the validity of a given handle
-TBool validateHandle(DIR2 handle);
-
-// Get a valid handle dir entry, used in the readdir2 function, returns the entry read in the pointer
-// Assumes a valid handle
-EOperationStatus getHandleContent(DIR2 handle, DIRENT2* dirEntry);
+// Definition of the current path (should initialize it rather)
+// Current working path
+char g_currentPath[32];
+DirEntry* gp_currentDirEntry;
 
 // Checks the existence of a given path
-TBool exists(char *pathname);
+DirEntry* exists(char *pathname);
 
 // Searches and returns dirEntry block address of found entry, else 0
+// Checks the directory entries of searchDir by comparing its name with the token
 unsigned int contains(char* token, DirEntry* searchDir);
+
+// Initializes library
+void initialize();
 
 #endif
