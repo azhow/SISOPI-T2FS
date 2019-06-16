@@ -7,6 +7,7 @@
 #ifndef __utils_h__
 #define __utils_h__
 
+#include "direntry.h"
 #include "t2fs.h"
 #include "EOperationStatus.h"
 #include "TBool.h"
@@ -27,5 +28,8 @@ EOperationStatus getHandleContent(DIR2 handle, DIRENT2* dirEntry);
 
 // Checks the existence of a given path
 TBool exists(char *pathname);
+
+// Searches and returns dirEntry block address of found entry, else 0
+unsigned int contains(char* token, DirEntry* searchDir);
 
 #endif
