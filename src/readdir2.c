@@ -21,6 +21,12 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 -----------------------------------------------------------------------------*/
 int readdir2(DIR2 handle, DIRENT2 *dentry)
 {
+	// Not initialized library yet
+	if (gp_currentDirEntry == NULL)
+	{
+		initialize();
+	}
+
 	// Status of the operation
 	EOperationStatus operationStatus = EOpUnknownError;
 	

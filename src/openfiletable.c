@@ -91,9 +91,7 @@ removeOpenFileFromTable(unsigned int handle)
 	if (gp_openFileTable->m_openFiles[handle] != NULL)
 	{
 		// Free memory
-		free(((DirEntry*)gp_openFileTable->m_openFiles[handle])->m_name);
-		free(((DirEntry*)gp_openFileTable->m_openFiles[handle])->m_entries);
-		free(gp_openFileTable->m_openFiles[handle]);
+		free((((OpenFile*)gp_openFileTable->m_openFiles[handle])->m_openFileDirEntry));
 		// Set entry to null
 		gp_openFileTable->m_openFiles[handle] = NULL;
 	}

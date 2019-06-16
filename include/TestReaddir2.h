@@ -2,7 +2,6 @@
 #define TESTREADDIR2_H
 
 #include "ETestStatus.h"
-#include "t2fs.h"
 
 // readdir2 function test
 ETestStatus testReaddir2();
