@@ -1,5 +1,7 @@
 #include "t2fs.h"
 #include "utils.h"
+#include "EOperationStatus.h"
+#include <stdlib.h>
 
 /*-----------------------------------------------------------------------------
 Função:	Altera o diretório atual de trabalho (working directory).
@@ -15,5 +17,20 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 -----------------------------------------------------------------------------*/
 int chdir2(char *pathname)
 {
+	// Operation result
+	EOperationStatus opStatus = EOpUnknownError;
+	// Searches for the pathname
+	DirEntry* newDir = exists(pathname);
+	// If dir was found
+	if (newDir != NULL)
+	{
+		// Free the current dir entry
+		free(gp_currentDirEntry);
+		// Point to the new one
+		gp_currentDirEntry = newDir;
+		// Update operation status
+		opStatus = EOpSuccess;
+	}
 
+	return opStatus;
 }
