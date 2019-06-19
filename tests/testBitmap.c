@@ -1,4 +1,6 @@
-#include "TestBitmap.h"
+#include "testMain.h"
+#include "ETestStatus.h"
+#include "bitmap.h"
 #include <stdio.h>
 #include <string.h>
 

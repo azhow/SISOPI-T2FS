@@ -1,4 +1,5 @@
-#include "TestFormat2.h"
+#include "testMain.h"
+#include "t2fs.h"
 #include "EOperationStatus.h"
 
 ETestStatus testFormat2()

@@ -2,8 +2,29 @@
 #include "utils.h"
 #include "TBool.h"
 #include "EOperationStatus.h"
+#include "apidisk.h"
 #include <stdlib.h>
 #include <string.h>
+
+// Reverses string
+char *strrev(char *str)
+{
+	if (!str || !*str)
+		return str;
+
+	int i = strlen(str) - 1, j = 0;
+
+	char ch;
+	while (i > j)
+	{
+		ch = str[i];
+		str[i] = str[j];
+		str[j] = ch;
+		i--;
+		j++;
+	}
+	return str;
+}
 
 /*-----------------------------------------------------------------------------
 Função:	Informa o diretório atual de trabalho.
@@ -21,6 +42,12 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 -----------------------------------------------------------------------------*/
 int getcwd2(char *pathname, int size)
 {
+	// Not initialized library yet
+	if (gp_currentDirEntry == NULL)
+	{
+		initialize();
+	}
+
 	// Operation result
 	EOperationStatus opStatus = EOpUnknownError;
 	// Initial directory
@@ -35,25 +62,35 @@ int getcwd2(char *pathname, int size)
 	while ((initialDir->m_parentAddress != 0x0) && (!noSpaceLeft))
 	{
 		// If there's space in the string
-		if ((strlen(initialDir->m_name) + strlen(path) + 1) < size)
+		if ((strlen(initialDir->m_name) + strlen(path) + 2) < size)
 		{
 			// Append separator to path
 			strcat(path, "/");
 			// Append to path
 			strcat(path, initialDir->m_name);
+			// Append separator to path
+			strcat(path, "/");
 		}
 		else
 		{
 			// No space left for the string
 			noSpaceLeft = true;
 		}
+		// Update dir
+		// Buffer which contains info from disk
+		unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
+		if (read_sector(initialDir->m_parentAddress, buffer) == EOpSuccess)
+		{
+			initialDir = deserialize_DirEntry(buffer);
+		}
+		free(buffer);
 	}
 
 	// If added all to string, the op was successfull
 	if (!noSpaceLeft)
 	{
 		// Reverses string
-		strrev(path);
+		path = strrev(path);
 		// Copy to path
 		strcpy(pathname, path);
 		// Update result

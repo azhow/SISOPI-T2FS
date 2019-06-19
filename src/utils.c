@@ -13,6 +13,7 @@ char g_currentPath[32] = "/";
 DirEntry* gp_currentDirEntry = NULL;
 
 // Checks the existence of a given path and assigns the found entry
+// Assumes non empty string
 DirEntry* 
 exists(char *pathname)
 {
@@ -22,8 +23,13 @@ exists(char *pathname)
 	// Path delimiter
 	char delimiter[2] = "/";
 
+	// Intermediate string to avoid modifying the input
+	char* intString = calloc(strlen(pathname) + 1, sizeof(char));
+
+	strcpy(intString, pathname);
+
 	// Tokenize
-	char* token = strtok(pathname, delimiter);
+	char* token = strtok(intString, delimiter);
 
 	// Non empty string
 	if (token != NULL)
@@ -98,10 +104,18 @@ exists(char *pathname)
 			token = strtok(NULL, delimiter);
 		}
 	}
-	// Might be root directory?
+	// Input empty should be root directory, return always the root
 	else
 	{
-		// TODO
+		// Buffer which contains info from disk
+		unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
+		// Update dirEntry
+		if (read_sector(ROOT_ADDRESS, buffer) == EOpSuccess)
+		{
+			foundDir = deserialize_DirEntry(buffer);
+		}
+		// Free allocated memory
+		free(buffer);
 	}
 
 	return foundDir;

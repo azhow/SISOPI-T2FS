@@ -17,6 +17,12 @@ Saída:	Se a operação foi realizada com sucesso, a função retorna "0" (zero).
 -----------------------------------------------------------------------------*/
 int chdir2(char *pathname)
 {
+	// Not initialized library yet
+	if (gp_currentDirEntry == NULL)
+	{
+		initialize();
+	}
+
 	// Operation result
 	EOperationStatus opStatus = EOpUnknownError;
 	// Searches for the pathname

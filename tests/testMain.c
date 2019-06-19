@@ -2,11 +2,6 @@
 #include "testMain.h"
 #include "t2fs.h"
 #include "ETestStatus.h"
-#include "TestFormat2.h"
-#include "TestOpendir2.h"
-#include "TestReaddir2.h"
-#include "TestClosedir2.h"
-#include "TestBitmap.h"
 
 ETestStatus runAllTests()
 {
@@ -95,6 +90,39 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
+
+	// chdir2 test
+	// Currently running test 
+	printf("chdir2_test:\t");
+	// Run the test
+	currentTestStatus = testChdir2();
+	// Check if test runned successfully
+	if (currentTestStatus != TestSuccess)
+	{
+		overallTestStatus -= TestError;
+		printf("FAILED\n");
+	}
+	else
+	{
+		printf("SUCCESS\n");
+	}
+
+	// getcwd2 test
+	// Currently running test 
+	printf("getcwd2_test:\t");
+	// Run the test
+	currentTestStatus = testGetcwd2();
+	// Check if test runned successfully
+	if (currentTestStatus != TestSuccess)
+	{
+		overallTestStatus -= TestError;
+		printf("FAILED\n");
+	}
+	else
+	{
+		printf("SUCCESS\n");
+	}
+
 
 	// If any test failed
 	if (overallTestStatus != 0)

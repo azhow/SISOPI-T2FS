@@ -1,4 +1,4 @@
-#include "TestOpendir2.h"
+#include "testMain.h"
 #include "t2fs.h"
 
 ETestStatus testOpendir2()

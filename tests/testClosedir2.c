@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "TestClosedir2.h"
+#include "testMain.h"
 #include "t2fs.h"
 #include "openfiletable.h"
 

@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "TestReaddir2.h"
+#include "testMain.h"
 #include "t2fs.h"
 
 ETestStatus testReaddir2()
