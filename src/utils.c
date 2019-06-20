@@ -202,9 +202,11 @@ initialize()
 {
 	// Current path is root
 	strcpy(g_currentPath, "/");
+	// Initialize superblock
+
 	// Buffer which contains info from disk
 	unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-	read_sector(ROOT_ADDRESS, buffer);
+	//read_sector(ROOT_ADDRESS, buffer);
 	// Current dirEntry of root
 	gp_currentDirEntry = deserialize_DirEntry(buffer);
 	// Free buffer

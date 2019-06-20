@@ -11,9 +11,13 @@ typedef struct
 {
 	int m_sectorsPerBlock; // Number of sectors per data block
 	unsigned short m_rootAddress; // Address of the sector of the root directory
+	unsigned short m_bitmapSize; // Size in bytes of the bitmap
 } Superblock;
 
 #pragma pack(pop)
+
+// Global information of the superblock
+Superblock* gp_superblock;
 
 // Serializes the Superblock (MBR) to write to disk
 // The buffer should have size == 256
