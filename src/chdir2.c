@@ -27,8 +27,8 @@ int chdir2(char *pathname)
 	EOperationStatus opStatus = EOpUnknownError;
 	// Searches for the pathname
 	DirEntry* newDir = exists(pathname);
-	// If dir was found
-	if (newDir != NULL)
+	// If dir was found and is a directory
+	if ((newDir != NULL) && (newDir->m_filetype == 0x02))
 	{
 		// Free the current dir entry
 		free(gp_currentDirEntry);
