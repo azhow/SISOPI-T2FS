@@ -163,7 +163,7 @@ initialize()
 	// Load root dir
 	gp_currentDirEntry = loadRoot();
 	// Initializes openfiletable
-	gp_openFileTable = malloc(sizeof(OpenFileTable));
+	gp_openFileTable = calloc(1, sizeof(OpenFileTable));
 	// Initialize bitmap of free memory
 	loadBitmap();
 }
