@@ -68,8 +68,6 @@ int getcwd2(char *pathname, int size)
 			strcat(path, "/");
 			// Append to path
 			strcat(path, initialDir->m_name);
-			// Append separator to path
-			strcat(path, "/");
 		}
 		else
 		{
@@ -89,6 +87,8 @@ int getcwd2(char *pathname, int size)
 	// If added all to string, the op was successfull
 	if (!noSpaceLeft)
 	{
+		// Append separator to the end of path
+		strcat(path, "/");
 		// Reverses string
 		path = strrev(path);
 		// Copy to path
