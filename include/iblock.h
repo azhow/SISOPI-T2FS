@@ -17,6 +17,9 @@ iBlock* initializeIBlock(unsigned int size);
 iBlock* loadIBlock(unsigned short blockAdd);
 
 // Serializes an iBlock to write to disk
-void serialize_iBlock(iBlock* s_iblock, unsigned char* buffer);
+// The buffer should have size of a block
+// Return signals the need for another block
+// Return 0 no need for another block
+unsigned short serialize_iBlock(iBlock* s_iblock, unsigned char* buffer, unsigned int startOffset, unsigned int bufferOffset);
 
 #endif

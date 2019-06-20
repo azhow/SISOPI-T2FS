@@ -32,7 +32,7 @@ DirEntry* createDirEntry(char* name, char type, DirEntry* parent);
 DirEntry* loadDirEntry(unsigned short blockAddress);
 
 // Saves DirEntry to block address (own address)
-void saveDirEntry(DirEntry* dirent);
+TBool saveDirEntry(DirEntry* dirent);
 
 // Adds dirEntSrc to iBlock (resize if needed)
 TBool addDirEntryToIBlock(iBlock* iblock, DirEntry* dirEntSrc);

@@ -101,7 +101,7 @@ contains(char* token, DirEntry* searchDir)
 		if (searchDir->m_filetype == 0x02)
 		{
 			// iBlock being read
-			iBlock* blockToRead = loadIBlock(searchDir);
+			iBlock* blockToRead = loadIBlock(searchDir->m_ownAddress);
 			// If loaded correctly
 			if (blockToRead != NULL)
 			{
@@ -150,7 +150,7 @@ initialize()
 	// Load root dir
 	gp_currentDirEntry = loadRoot();
 	// Initializes openfiletable
-	gp_openFileTable = calloc(1, sizeof(OpenFileTable));
+	gp_openFileTable = malloc(sizeof(OpenFileTable));
 	// Initialize bitmap of free memory
 	loadBitmap();
 }
@@ -180,8 +180,8 @@ unsigned char* readBlock(unsigned short blockAddress)
 		pBuffer = malloc(SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
 
 		// Read the info from all sectors
-		unsigned short i = 0;
-		for (i; i < gp_superblock->m_sectorsPerBlock; i++)
+		unsigned short i;
+		for (i = 0; i < gp_superblock->m_sectorsPerBlock; i++)
 		{
 			read_sector(sectorAdd + i, pBuffer + (i * SECTOR_SIZE));
 		}
@@ -203,8 +203,8 @@ void writeBlock(unsigned short blockAddress, unsigned char* pBuffer)
 		pBuffer = malloc(SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
 
 		// Read the info from all sectors
-		unsigned short i = 0;
-		for (i; i < gp_superblock->m_sectorsPerBlock; i++)
+		unsigned short i;
+		for (i = 0; i < gp_superblock->m_sectorsPerBlock; i++)
 		{
 			write_sector(sectorAdd + i, pBuffer + (i * SECTOR_SIZE));
 		}

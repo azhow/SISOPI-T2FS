@@ -47,11 +47,9 @@ createOpenFile(DirEntry* fileToOpen)
 	strcpy(newEntry->m_openFileDirEntry->m_name, fileToOpen->m_name);
 	newEntry->m_openFileDirEntry->m_filetype = fileToOpen->m_filetype;
 	newEntry->m_openFileDirEntry->m_size = fileToOpen->m_size;
-	newEntry->m_openFileDirEntry->m_iBlockAddress = fileToOpen->m_iBlockAddress;
+	newEntry->m_openFileDirEntry->m_iBlock = fileToOpen->m_iBlock;
 	newEntry->m_openFileDirEntry->m_ownAddress = fileToOpen->m_ownAddress;
 	newEntry->m_openFileDirEntry->m_parentAddress = fileToOpen->m_parentAddress;
-	memcpy(newEntry->m_openFileDirEntry->m_entries, fileToOpen->m_entries, sizeof(newEntry->m_openFileDirEntry->m_entries));
-	newEntry->m_openFileDirEntry->m_empty = fileToOpen->m_empty;
 	// Initializes file pointer to first byte of the file
 	newEntry->m_filepointer = 0;
 

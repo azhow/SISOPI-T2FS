@@ -10,12 +10,18 @@
 DirEntry* gp_currentDirEntry = NULL;
 
 // Serializes the DirEntry to write to disk
-// The buffer should have size == 256
-void
-serialize_DirEntry(DirEntry* s_dirEntry, unsigned char* buffer)
+// The buffer must have size of 1 block
+// Returns the number of used blocks
+unsigned char*
+serialize_DirEntry(DirEntry* s_dirEntry, unsigned short* usedBlocks)
 {
+	// Number of used blocks
+	(*usedBlocks) = 1;
+
+	// Block size in bytes
+	const unsigned short cBlockSizeBytes = gp_superblock->m_sectorsPerBlock*SECTOR_SIZE;
 	// Temp buffer
-	unsigned char* tempBuffer = calloc(SECTOR_SIZE, sizeof(unsigned char));
+	unsigned char* tempBuffer = calloc(1, cBlockSizeBytes);
 	// Add name to temp buffer
 	memcpy(tempBuffer, s_dirEntry->m_name, sizeof(s_dirEntry->m_name));
 	// Add filetype to temp buffer
@@ -26,33 +32,34 @@ serialize_DirEntry(DirEntry* s_dirEntry, unsigned char* buffer)
 		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype),
 		&s_dirEntry->m_size, 
 		sizeof(s_dirEntry->m_size));
-	// Add iBlockAddress to temp buffer
-	memcpy(
-		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size),
-		&s_dirEntry->m_iBlockAddress, 
-		sizeof(s_dirEntry->m_iBlockAddress));
 	// Add parentAddress to temp buffer
 	memcpy(
-		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_iBlockAddress),
+		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size),
 		&s_dirEntry->m_parentAddress, 
 		sizeof(s_dirEntry->m_parentAddress));
 	// Add ownAddress to temp buffer
 	memcpy(
-		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_iBlockAddress)*2,
-		&s_dirEntry->m_ownAddress, 
+		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_parentAddress),
+		&s_dirEntry->m_ownAddress,
 		sizeof(s_dirEntry->m_ownAddress));
-	// Add entries to temp buffer
-	memcpy(
-		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_iBlockAddress)*3,
-		&s_dirEntry->m_entries, 
-		sizeof(s_dirEntry->m_entries));
-	// Add empty to temp buffer
-	memcpy(
-		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_iBlockAddress)*3  + sizeof(s_dirEntry->m_entries),
-		&s_dirEntry->m_empty, 
-		sizeof(s_dirEntry->m_empty));
 
-	memcpy(buffer, tempBuffer, sizeof(DirEntry));
+	// Serializes iBlock contents
+	unsigned int needAnotherBlock = serialize_iBlock(s_dirEntry->m_iBlock, tempBuffer, 0, sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_parentAddress)*2);
+	if (needAnotherBlock != 0)
+	{
+		// There will be one byte remaining
+		unsigned short contentWritten = (cBlockSizeBytes - (sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_parentAddress))) / sizeof(unsigned short);
+		do
+		{
+			// Size in blocks
+			(*usedBlocks)++;
+			// Buffer need to grow
+			tempBuffer = realloc(tempBuffer, cBlockSizeBytes * (*usedBlocks));
+			contentWritten = cBlockSizeBytes / sizeof(unsigned short);
+		} while (serialize_iBlock(s_dirEntry->m_iBlock, tempBuffer, contentWritten, 0) != 0);
+	}
+
+	return tempBuffer;
 }
 
 // Deserializes the DirEntry to read from disk
@@ -81,7 +88,7 @@ deserialize_DirEntry(unsigned char* buffer)
 	// Add ownAddress to new struct
 	memcpy(
 		&readDir->m_ownAddress,
-		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size),
+		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size) + sizeof(readDir->m_parentAddress),
 		sizeof(readDir->m_ownAddress));
 	// Deserializes and allocates iBlock
 	readDir->m_iBlock = loadIBlock(readDir->m_ownAddress);
@@ -120,16 +127,46 @@ DirEntry* loadDirEntry(unsigned short blockAddress)
 }
 
 // Saves DirEntry to block address (own address)
-void saveDirEntry(DirEntry* dirent)
+TBool saveDirEntry(DirEntry* dirent)
 {
-	unsigned char* pBuffer = NULL;
+	// Operation status
+	TBool result = true;
 
-	serialize_DirEntry(dirent, pBuffer);
+	// Number of blocks used by the operation
+	unsigned short numberOfBlocksUsed = 0;
 
-	if (pBuffer != NULL)
+	// Serializes dir entry
+	unsigned char* pBuffer = serialize_DirEntry(dirent, &numberOfBlocksUsed);
+
+	// If operation successfull
+	if ((pBuffer != NULL) && (numberOfBlocksUsed != 0))
 	{
+		// Write block to disk
 		writeBlock(dirent->m_ownAddress, pBuffer);
+		numberOfBlocksUsed--;
+		unsigned short i = 1;
+		// Write all blocks to disk
+		while ((numberOfBlocksUsed > 0) && (result))
+		{
+			// Allocate memory block
+			unsigned short blockAdd = allocBlock();
+			// If block is valid
+			if (blockAdd < (gp_superblock->m_bitmapSize + 1))
+			{
+				writeBlock(blockAdd, pBuffer + (i * gp_superblock->m_sectorsPerBlock * SECTOR_SIZE));
+				numberOfBlocksUsed--;
+				i++;
+			}
+			// Else operation failed
+			else
+			{
+				// Operation failed
+				result = false;
+			}
+		}
 	}
+
+	return result;
 }
 
 // Create DirEntry (assigns a free block)
@@ -147,6 +184,7 @@ DirEntry* createDirEntry(char* name, char type, DirEntry* parent)
 		if (blockAddress != (gp_superblock->m_bitmapSize + 1))
 		{
 			createdDirEnt = calloc(1, sizeof(DirEntry));
+			createdDirEnt->m_iBlock = initializeIBlock(10);
 			strcpy(createdDirEnt->m_name, name);
 			createdDirEnt->m_filetype = type;
 			createdDirEnt->m_ownAddress = blockAddress;
@@ -161,6 +199,7 @@ DirEntry* createDirEntry(char* name, char type, DirEntry* parent)
 		if (blockAddress != (gp_superblock->m_bitmapSize + 1))
 		{
 			createdDirEnt = calloc(1, sizeof(DirEntry));
+			createdDirEnt->m_iBlock = initializeIBlock(10);
 			strcpy(createdDirEnt->m_name, name);
 			createdDirEnt->m_filetype = type;
 			createdDirEnt->m_ownAddress = blockAddress;
@@ -191,7 +230,7 @@ TBool addToIBlock(DirEntry* dirEntDst, DirEntry* dirEntSrc)
 		if (dirEntDst->m_iBlock == NULL)
 		{
 			// Initialize iblock
-			dirEntDst = initializeIBlock(10);
+			dirEntDst->m_iBlock = initializeIBlock(10);
 		}
 
 		// If successfully initialized

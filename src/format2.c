@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "superblock.h"
 #include "apidisk.h"
+#include "bitmap.h"
 
 #include <stdio.h>
 
@@ -25,12 +26,17 @@ int format2(int sectors_per_block)
 	{
 		// Initialize superblock (save to disk also)
 		initializeSuperblock(sectors_per_block);
+		// Initialize bitmap
+		gp_memBitmap = malloc(sizeof(Bitmap));
+		// Initialize all memory free
+		memset(gp_memBitmap->m_map, 0x31, sizeof(gp_memBitmap->m_map));
 		// Create root dir and saves to disk
 		gp_currentDirEntry = createDirEntry("root", 0x02, NULL);
+		// Initializes library
+		initialize();
+		retValue = EOpSuccess;
 	}
 
-	// Initializes library
-	initialize();
 
 	return retValue;
 }

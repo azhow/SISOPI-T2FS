@@ -27,4 +27,7 @@ unsigned short allocBlock();
 // Free a block (saves to disk)
 void freeBlock(unsigned short idx);
 
+// Get the index of the first free block (return superblock->m_bitmapSize + 1 if not found)
+unsigned short getFreeBlock();
+
 #endif

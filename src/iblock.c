@@ -3,14 +3,40 @@
 #include "iblock.h"
 #include "utils.h"
 #include "superblock.h"
+#include "bitmap.h"
 
 // Serializes an iBlock to write to disk
 // The buffer should have size of a block
-void 
-serialize_iBlock(iBlock* s_iblock, unsigned char* buffer)
+// Return signals the need for another block
+// Return 0 no need for another block
+unsigned short 
+serialize_iBlock(iBlock* s_iblock, unsigned char* buffer, unsigned int startOffset, unsigned int bufferOffset)
 {
-	// Add name to buffer
-	memcpy(buffer, s_iblock->m_contents, sizeof(unsigned short) * s_iblock->m_size);
+	// Add of next block
+	unsigned short nextBlockAdd = 0;
+
+	// Need for another block
+	// If the size of iblock is bigger than block size
+	TBool needAnotherBlock = (sizeof(unsigned short) * s_iblock->m_size) > (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE);
+
+	// If valid address and need another block, we need to set the next block position
+	if (needAnotherBlock)
+	{
+		nextBlockAdd = getFreeBlock();
+		// If found free block successfully
+		if (nextBlockAdd < gp_superblock->m_bitmapSize + 1)
+		{
+			// Set content[0] to the address
+			memset(buffer + bufferOffset, nextBlockAdd, sizeof(unsigned short));
+			// Add +1 to buffer size
+			bufferOffset++;
+		}
+	}
+
+	// Copy info to buffer
+	memcpy(buffer + bufferOffset, s_iblock->m_contents + startOffset, (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE) - bufferOffset);
+
+	return nextBlockAdd;
 }
 
 // Deserializes an iBlock read from disk
@@ -24,7 +50,7 @@ deserialize_iBlock(unsigned char* buffer, unsigned int offset)
 	psiBlock->m_size = 0;
 
 	unsigned int i = 0;
-	while ((buffer + offset + i) < 4000)
+	while ((psiBlock->m_size + offset + i) < 4000)
 	{
 		// Copy content from buffer
 		memcpy(psiBlock->m_contents, buffer + offset + i, sizeof(unsigned short));
