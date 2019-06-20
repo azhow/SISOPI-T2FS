@@ -2,6 +2,10 @@
 #define __superblock_h__
 
 #define MBR_SECTOR 0
+// Root block address
+#define ROOT_ADDRESS 0
+// The first block starts at sector 17
+#define FIRST_BLOCK_SECTOR 17
 
 // Pragma directive to tell the compiler to not add any padding, so the struct has a predictable size 256
 #pragma pack(push, 1)
@@ -10,7 +14,7 @@
 typedef struct
 {
 	int m_sectorsPerBlock; // Number of sectors per data block
-	unsigned short m_rootAddress; // Address of the sector of the root directory
+	unsigned short m_rootAddress; // Address of the block of the root directory
 	unsigned short m_bitmapSize; // Size in bytes of the bitmap
 } Superblock;
 
@@ -19,12 +23,13 @@ typedef struct
 // Global information of the superblock
 Superblock* gp_superblock;
 
-// Serializes the Superblock (MBR) to write to disk
-// The buffer should have size == 256
-void serialize_Superblock(Superblock* s_superblock, unsigned char* buffer);
+// Save superblock to disk
+void saveSuperblock();
 
-// Deserializes the Superblock to read from disk
-// The buffer should have size == 256
-Superblock* deserialize_Superblock(unsigned char* buffer);
+// Load superblock from disk (into the the global variable)
+Superblock* loadSuperblock();
+
+// Initializes superblock saves to disk and returns the pointer of the allocated struct
+void initializeSuperblock(int secPerBlock);
 
 #endif

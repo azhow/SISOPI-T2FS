@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "superblock.h"
+#include "apidisk.h"
 #include "utils.h"
 
 // Global information of the superblock
@@ -60,4 +61,68 @@ deserialize_Superblock(unsigned char* buffer)
 		sizeof(psSuperblock->m_bitmapSize));
 
 	return psSuperblock;
+}
+
+// Save superblock to disk
+void saveSuperblock()
+{
+	// Buffer for the superblock
+	unsigned char* pBuffer = calloc(SECTOR_SIZE, sizeof(char));
+
+	// Read sector MBR_SECTOR
+	// MUST preserve the old contents
+	if (read_sector(MBR_SECTOR, pBuffer) == EOpSuccess)
+	{
+		// Serializes the superblock
+		serialize_Superblock(gp_superblock, pBuffer);
+		// Write sector
+		write_sector(MBR_SECTOR, pBuffer);
+	}
+
+	free(pBuffer);
+}
+
+// Load superblock from disk (into the the global variable)
+Superblock* loadSuperblock()
+{
+	Superblock* psSuperblock = NULL;
+
+	// Buffer for the superblock
+	unsigned char* pBuffer = calloc(SECTOR_SIZE, sizeof(char));
+
+	// Read sector MBR_SECTOR
+	// MUST preserve the old contents
+	if (read_sector(MBR_SECTOR, pBuffer) == EOpSuccess)
+	{
+		// Serializes the superblock
+		psSuperblock = deserialize_Superblock(pBuffer);
+	}
+
+	free(pBuffer);
+
+	return psSuperblock;
+}
+
+// Initializes superblock saves to disk and returns the pointer of the allocated struct
+void initializeSuperblock(int secPerBlock)
+{
+	// Superblock struct
+	Superblock* psSuperblock = malloc(sizeof(Superblock));
+	psSuperblock->m_sectorsPerBlock = secPerBlock;
+	psSuperblock->m_rootAddress = FIRST_BLOCK_SECTOR;
+	// Total number of sectors in the disk - MBR - BITMAPsectors
+	const unsigned short cNumOfSectors = 4000 - 1 - 16;
+	// Number of blocks in the map (take the lowest integer from the division this results in wasted space in the disk)
+	psSuperblock->m_bitmapSize = cNumOfSectors / secPerBlock;
+	
+	// Free memory if already initialized
+	if (gp_superblock != NULL)
+	{
+		free(gp_superblock);
+	}
+	// Asssign global
+	gp_superblock = psSuperblock;
+
+	// Save to disk
+	saveSuperblock();
 }

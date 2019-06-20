@@ -14,9 +14,6 @@
 
 #define DISK_NUM_SECTORS 4000
 
-// ERASE
-#define ROOT_ADDRESS 1
-
 // Definition of the current path (should initialize it rather)
 // Current working path
 char g_currentPath[32];

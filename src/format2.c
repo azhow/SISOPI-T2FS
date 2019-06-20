@@ -23,24 +23,10 @@ int format2(int sectors_per_block)
 	// The FS only makes sense when sectors per block is bigger than 0
 	if (sectors_per_block > 0)
 	{
-		// Superblock struct
-		Superblock* psSuperblock = malloc(sizeof(Superblock));
-		psSuperblock->m_sectorsPerBlock = sectors_per_block;
-		psSuperblock->m_rootAddress = 1;
+		// Initialize superblock (save to disk also)
+		initializeSuperblock(sectors_per_block);
 
-		// Buffer for the superblock
-		unsigned char* pBuffer = calloc(SECTOR_SIZE, sizeof(char));
-
-		// Read sector MBR_SECTOR
-		// MUST preserve the old contents
-		if (read_sector(MBR_SECTOR, pBuffer) == EOpSuccess)
-		{
-			// Serializes the superblock
-			serialize_Superblock(psSuperblock, pBuffer);
-			// Write sector
-			retValue = write_sector(MBR_SECTOR, pBuffer);
-		}
-
+		/*
 		// Create root dir
 		DirEntry* pRoot = malloc(sizeof(DirEntry));
 		// Set the root attributes
@@ -62,6 +48,7 @@ int format2(int sectors_per_block)
 		// Free buffer
 		free(pBuffer);
 		free(pRoot);
+		*/
 	}
 
 	// Initializes library
