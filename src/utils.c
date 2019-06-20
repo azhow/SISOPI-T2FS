@@ -11,6 +11,7 @@
 
 // Checks the existence of a given path and assigns the found entry
 // Assumes non empty string
+// Returns null if not found
 DirEntry*
 exists(char *pathname)
 {
@@ -76,6 +77,11 @@ exists(char *pathname)
 				currDirExists = false;
 			}
 			token = strtok(NULL, delimiter);
+		}
+		// If not found, should return null
+		if (!currDirExists)
+		{
+			foundDir = NULL;
 		}
 	}
 	// Input empty should be root directory, return always the root
