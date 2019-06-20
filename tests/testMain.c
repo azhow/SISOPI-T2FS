@@ -26,6 +26,22 @@ ETestStatus runAllTests()
 		printf("SUCCESS\n");
 	}
 
+	// mkdir2 test
+	// Currently running test 
+	printf("mkdir2_test:\t");
+	// Run the test
+	currentTestStatus = testMkdir2();
+	// Check if test runned successfully
+	if (currentTestStatus != TestSuccess)
+	{
+		overallTestStatus -= TestError;
+		printf("FAILED\n");
+	}
+	else
+	{
+		printf("SUCCESS\n");
+	}
+
 	// opendir2 test
 	// Currently running test 
 	printf("opendir2_test:\t");

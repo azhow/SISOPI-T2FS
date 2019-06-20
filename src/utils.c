@@ -38,6 +38,7 @@ exists(char *pathname)
 		{
 			// Process from current path
 			foundDir = gp_currentDirEntry;
+			token = strtok(NULL, delimiter);
 		}
 		// else if from parent dir
 		else if ((strlen(token) == 2) && (strncmp(token, "..", 2) == 0))
@@ -47,6 +48,7 @@ exists(char *pathname)
 			if (gp_currentDirEntry->m_parentAddress != 0)
 			{
 				foundDir = loadDirEntry(gp_currentDirEntry->m_parentAddress);
+				token = strtok(NULL, delimiter);
 			}
 		}
 		// Absolute path
@@ -114,8 +116,8 @@ contains(char* token, DirEntry* searchDir)
 			// If loaded correctly
 			if (blockToRead != NULL)
 			{
-				// Index of the array (starts at three because its at this index that start the entries)
-				unsigned short i = 3;
+				// Index of the array (starts at one because its at this index that start the entries)
+				unsigned short i = 1;
 				// Current content being read (block address)
 				unsigned int currContent = (unsigned int)(blockToRead->m_contents[i]);
 				// Found value?
@@ -188,7 +190,7 @@ unsigned char* readBlock(unsigned short blockAddress)
 	// If sector address is valid, we read sector
 	if (sectorAdd > 0)
 	{
-		pBuffer = malloc(SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
+		pBuffer = calloc(1, SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
 
 		// Read the info from all sectors
 		unsigned short i;

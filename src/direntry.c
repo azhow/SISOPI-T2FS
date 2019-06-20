@@ -68,7 +68,7 @@ DirEntry*
 deserialize_DirEntry(unsigned char* buffer)
 {
 	// Returned read dir
-	DirEntry* readDir = malloc(sizeof(DirEntry));
+	DirEntry* readDir = malloc(gp_superblock->m_sectorsPerBlock * SECTOR_SIZE);
 
 	// Add name to new struct
 	memcpy(readDir->m_name, buffer, sizeof(readDir->m_name));
@@ -240,6 +240,8 @@ TBool addToIBlock(DirEntry* dirEntDst, DirEntry* dirEntSrc)
 			if (addDirEntryToIBlock(dirEntDst->m_iBlock, dirEntSrc))
 			{
 				result = true;
+				// Saves to disk
+				saveDirEntry(dirEntDst);
 			}
 		}
 	}
@@ -255,15 +257,16 @@ TBool addDirEntryToIBlock(iBlock* iblock, DirEntry* dirEntSrc)
 
 	if ((iblock != NULL) && (dirEntSrc != NULL))
 	{
-		unsigned int idx = 0;
+		unsigned int idx = 1;
 		TBool found = false;
 		// Iterates through the iBlock to find empty entry
 		while ((idx < iblock->m_size) && (!found))
 		{
 			// 0 represents free
-			if ((iblock->m_contents + idx) == 0)
+			if ((iblock->m_contents[idx]) == 0)
 			{
 				found = true;
+				iblock->m_contents[idx] = dirEntSrc->m_ownAddress;
 			}
 			else
 			{
@@ -276,7 +279,9 @@ TBool addDirEntryToIBlock(iBlock* iblock, DirEntry* dirEntSrc)
 			// Reallocate bigger memory
 			iblock->m_contents = realloc(iblock->m_contents, iblock->m_size + 1);
 			iblock->m_size = iblock->m_size + 1;
+			iblock->m_contents[idx] = dirEntSrc->m_ownAddress;
 		}
+		result = true;
 	}
 
 	return result;

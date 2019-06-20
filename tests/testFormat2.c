@@ -14,7 +14,7 @@ ETestStatus testFormat2()
 	}
 
 	// This call should be successful
-	if ((format2(49) == EOpSuccess) && (testResult == TestSuccess))
+	if ((format2(1) == EOpSuccess) && (testResult == TestSuccess))
 	{
 		testResult = TestSuccess;
 	}

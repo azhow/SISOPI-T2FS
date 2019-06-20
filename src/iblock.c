@@ -44,26 +44,31 @@ serialize_iBlock(iBlock* s_iblock, unsigned char* buffer, unsigned int startOffs
 iBlock* 
 deserialize_iBlock(unsigned char* buffer, unsigned int offset)
 {
-	// Returned superblock
-	iBlock* psiBlock = malloc(sizeof(iBlock));
+	iBlock* psiBlock = NULL;
+	if (offset > 0)
+	{
+		// Returned superblock
+		psiBlock = malloc(gp_superblock->m_sectorsPerBlock * SECTOR_SIZE - offset);
+		offset--;
+	}
+	else
+	{
+		psiBlock = malloc(gp_superblock->m_sectorsPerBlock * SECTOR_SIZE);
+	}
+
 	// Initialize size
 	psiBlock->m_size = 0;
 
 	unsigned int i = 0;
-	while ((psiBlock->m_size + offset + i + 1) < (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE))
+	while ((psiBlock->m_size + offset + i) < (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE))
 	{
 		i = i + sizeof(unsigned short);
 		psiBlock->m_size++;
 	}
 	// Allocates the memory for the contents
-	psiBlock->m_contents = calloc(psiBlock->m_size, sizeof(unsigned short));
-	i = 0;
-	while (i < (psiBlock->m_size * sizeof(unsigned short)))
-	{
-		// Copy content from buffer
-		memcpy(psiBlock->m_contents, buffer + offset + i, sizeof(unsigned short));
-		i = i + sizeof(unsigned short);
-	}
+	psiBlock->m_contents = malloc(i);
+	// Copy content from buffer
+	memcpy(psiBlock->m_contents, buffer + offset + 1, sizeof(unsigned short)*psiBlock->m_size);
 
 	return psiBlock;
 }
@@ -100,35 +105,37 @@ iBlock* loadIBlock(unsigned short blockAdd)
 
 	unsigned char* pBuffer = readBlock(blockAdd);
 
-	// Deserializes the read info
-	loadedIBlock = deserialize_iBlock(pBuffer, cOffsetDirEntryData);
-	
-	// If has continuation record, must load it
-	if (loadedIBlock->m_contents[0] != 0)
+	if (pBuffer != NULL)
 	{
-		pBuffer = readBlock(loadedIBlock->m_contents[0]);
-		iBlock* currBlock = deserialize_iBlock(pBuffer, 0);
-		TBool end = false;
-		do
+		// Deserializes the read info
+		loadedIBlock = deserialize_iBlock(pBuffer, cOffsetDirEntryData);
+	
+		// If has continuation record, must load it
+		if (loadedIBlock->m_contents[0] != 0)
 		{
-			// Concatenate with the loadediBlock
-			concatenateIBlock(loadedIBlock, currBlock);
-			// Read new block
-			pBuffer = readBlock(currBlock->m_contents[0]);
-			free(currBlock);
-			// Deserialize it
-			currBlock = deserialize_iBlock(pBuffer, 0);
-			// Load last block
-			if ((currBlock->m_contents[0] == 0))
+			pBuffer = readBlock(loadedIBlock->m_contents[0]);
+			iBlock* currBlock = deserialize_iBlock(pBuffer, 0);
+			TBool end = false;
+			do
 			{
 				// Concatenate with the loadediBlock
 				concatenateIBlock(loadedIBlock, currBlock);
+				// Read new block
+				pBuffer = readBlock(currBlock->m_contents[0]);
 				free(currBlock);
-				end = true;
-			}
-		} while (!end);
+				// Deserialize it
+				currBlock = deserialize_iBlock(pBuffer, 0);
+				// Load last block
+				if ((currBlock->m_contents[0] == 0))
+				{
+					// Concatenate with the loadediBlock
+					concatenateIBlock(loadedIBlock, currBlock);
+					free(currBlock);
+					end = true;
+				}
+			} while (!end);
+		}
 	}
-	free(pBuffer);
 
 	return loadedIBlock;
 }

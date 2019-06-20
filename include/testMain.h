@@ -12,6 +12,9 @@ ETestStatus testReaddir2();
 // opendir2 function test
 ETestStatus testOpendir2();
 
+// mkdir2 function test
+ETestStatus testMkdir2();
+
 // format2 function test
 ETestStatus testFormat2();
 
