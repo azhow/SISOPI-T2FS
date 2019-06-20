@@ -27,4 +27,10 @@ ETestStatus testChdir2();
 // getcwd2 function test
 ETestStatus testGetcwd2();
 
+// open2 function test
+ETestStatus testOpen2();
+
+// create2 function test
+ETestStatus testCreate2();
+
 #endif // !TESTMAIN_H

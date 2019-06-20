@@ -1,13 +1,13 @@
 #include "testMain.h"
 #include "t2fs.h"
 
-ETestStatus testOpen2()
+ETestStatus testCreate2()
 {
 	// Test result
 	ETestStatus testResult = TestError;
 
-	char testPath[] = "/a";
-	if (open2(testPath) != -1)
+	char *fileName = "arquivo";
+	if (create2(fileName) != -1)
 	{
 		testResult = TestSuccess;
 	}
