@@ -170,6 +170,38 @@ ETestStatus runAllTests()
 		printf("SUCCESS\n");
 	}
 
+	// close2 test
+	// Currently running test 
+	printf("close2_test:\t");
+	// Run the test
+	currentTestStatus = testClose2();
+	// Check if test runned successfully
+	if (currentTestStatus != TestSuccess)
+	{
+		overallTestStatus -= TestError;
+		printf("FAILED\n");
+	}
+	else
+	{
+		printf("SUCCESS\n");
+	}
+
+	// delete2 test
+	// Currently running test 
+	printf("delete2_test:\t");
+	// Run the test
+	currentTestStatus = testDelete2();
+	// Check if test runned successfully
+	if (currentTestStatus != TestSuccess)
+	{
+		overallTestStatus -= TestError;
+		printf("FAILED\n");
+	}
+	else
+	{
+		printf("SUCCESS\n");
+	}
+
 	// If any test failed
 	if (overallTestStatus != 0)
 	{

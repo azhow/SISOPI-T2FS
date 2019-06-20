@@ -36,4 +36,10 @@ ETestStatus testOpen2();
 // create2 function test
 ETestStatus testCreate2();
 
+// close2 function test
+ETestStatus testClose2();
+
+// delete2 function test
+ETestStatus testDelete2();
+
 #endif // !TESTMAIN_H
