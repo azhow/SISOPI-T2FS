@@ -50,12 +50,19 @@ deserialize_iBlock(unsigned char* buffer, unsigned int offset)
 	psiBlock->m_size = 0;
 
 	unsigned int i = 0;
-	while ((psiBlock->m_size + offset + i) < 4000)
+	while ((psiBlock->m_size + offset + i + 1) < (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE))
+	{
+		i = i + sizeof(unsigned short);
+		psiBlock->m_size++;
+	}
+	// Allocates the memory for the contents
+	psiBlock->m_contents = calloc(psiBlock->m_size, sizeof(unsigned short));
+	i = 0;
+	while (i < (psiBlock->m_size * sizeof(unsigned short)))
 	{
 		// Copy content from buffer
 		memcpy(psiBlock->m_contents, buffer + offset + i, sizeof(unsigned short));
-		i++;
-		psiBlock->m_size++;
+		i = i + sizeof(unsigned short);
 	}
 
 	return psiBlock;

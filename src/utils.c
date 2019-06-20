@@ -55,33 +55,36 @@ exists(char *pathname)
 			foundDir = loadRoot();
 		}
 
-		// Does the current dir exists?
-		TBool currDirExists = true;
+		if (foundDir != NULL)
+		{
+			// Does the current dir exists?
+			TBool currDirExists = true;
 
-		// Transverse
-		while ((token != NULL) && currDirExists)
-		{
-			// Searches and returns dirEntry block address of found entry, else 0
-			unsigned int blockAddOfFound = contains(token, foundDir);
-			// If found
-			if (blockAddOfFound != 0)
+			// Transverse
+			while ((token != NULL) && currDirExists)
 			{
-				foundDir = loadDirEntry(blockAddOfFound);
-				// Updates currDir value
-				currDirExists = true;
+				// Searches and returns dirEntry block address of found entry, else 0
+				unsigned int blockAddOfFound = contains(token, foundDir);
+				// If found
+				if (blockAddOfFound != 0)
+				{
+					foundDir = loadDirEntry(blockAddOfFound);
+					// Updates currDir value
+					currDirExists = true;
+				}
+				// Not found
+				else
+				{
+					// currDir not found
+					currDirExists = false;
+				}
+				token = strtok(NULL, delimiter);
 			}
-			// Not found
-			else
+			// If not found, should return null
+			if (!currDirExists)
 			{
-				// currDir not found
-				currDirExists = false;
+				foundDir = NULL;
 			}
-			token = strtok(NULL, delimiter);
-		}
-		// If not found, should return null
-		if (!currDirExists)
-		{
-			foundDir = NULL;
 		}
 	}
 	// Input empty should be root directory, return always the root
@@ -122,8 +125,10 @@ contains(char* token, DirEntry* searchDir)
 				{
 					// Loads dir entry
 					DirEntry* currDirEntry = loadDirEntry(currContent);
-					// Compares the name
-					if (strncmp(token, currDirEntry->m_name, sizeof(currDirEntry->m_name)) == 0)
+					// Size of the smallest string to compare
+					unsigned int smallest = (strlen(token) < strlen(currDirEntry->m_name)) ? strlen(token) : strlen(currDirEntry->m_name);
+					// Compares the name (account for \0)
+					if (strncmp(token, currDirEntry->m_name, smallest + 1) == 0)
 					{
 						iBlockOfFound = currDirEntry->m_ownAddress;
 						// Found
