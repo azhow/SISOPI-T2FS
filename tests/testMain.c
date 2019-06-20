@@ -42,23 +42,6 @@ ETestStatus runAllTests()
 		printf("SUCCESS\n");
 	}
 
-	/*
-	// bitmap test
-	// Currently running test 
-	printf("bitmap_test:\t");
-	// Run the test
-	currentTestStatus = testBitmap();
-	// Check if test runned successfully
-	if (currentTestStatus != TestSuccess)
-	{
-		overallTestStatus -= TestError;
-		printf("FAILED\n");
-	}
-	else
-	{
-		printf("SUCCESS\n");
-	}*/
-
 	// readdir2 test
 	// Currently running test 
 	printf("readdir2_test:\t");
