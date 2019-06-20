@@ -73,31 +73,18 @@ deserialize_DirEntry(unsigned char* buffer)
 		&readDir->m_size,
 		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype),
 		sizeof(readDir->m_size));
-	// Add iBlockAddress to new struct
-	memcpy(
-		&readDir->m_iBlockAddress,
-		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size),
-		sizeof(readDir->m_iBlockAddress));
 	// Add parentAddress to new struct
 	memcpy(
 		&readDir->m_parentAddress,
-		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size) + sizeof(readDir->m_iBlockAddress),
+		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size),
 		sizeof(readDir->m_parentAddress));
 	// Add ownAddress to new struct
 	memcpy(
 		&readDir->m_ownAddress,
-		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size) + sizeof(readDir->m_iBlockAddress) * 2,
+		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size),
 		sizeof(readDir->m_ownAddress));
-	// Add entries to new struct
-	memcpy(
-		readDir->m_entries,
-		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size) + sizeof(readDir->m_iBlockAddress) * 3,
-		sizeof(readDir->m_entries));
-	// Add empty to new struct
-	memcpy(
-		&readDir->m_empty,
-		buffer + sizeof(readDir->m_name) + sizeof(readDir->m_filetype) + sizeof(readDir->m_size) + sizeof(readDir->m_iBlockAddress) * 3 + sizeof(readDir->m_entries),
-		sizeof(readDir->m_empty));
+	// Deserializes and allocates iBlock
+	readDir->m_iBlock = loadIBlock(readDir->m_ownAddress);
 
 	return readDir;
 }
@@ -189,4 +176,69 @@ DirEntry* createDirEntry(char* name, char type, DirEntry* parent)
 	}
 
 	return createdDirEnt;
+}
+
+// Adds dirEntSrc entry to iBlock of dirEntDst (and create it if not already initialized)
+TBool addToIBlock(DirEntry* dirEntDst, DirEntry* dirEntSrc)
+{
+	// Operation result
+	TBool result = false;
+
+	// If both inputs are ok
+	if ((dirEntSrc != NULL) && (dirEntDst != NULL))
+	{
+		// If dirEntDst has no allocated iblock
+		if (dirEntDst->m_iBlock == NULL)
+		{
+			// Initialize iblock
+			dirEntDst = initializeIBlock(10);
+		}
+
+		// If successfully initialized
+		if (dirEntDst->m_iBlock != NULL)
+		{
+			// Add dir entry to iBlock
+			if (addDirEntryToIBlock(dirEntDst->m_iBlock, dirEntSrc))
+			{
+				result = true;
+			}
+		}
+	}
+
+	return result;
+}
+
+// Adds dirEntSrc to iBlock (resize if needed)
+TBool addDirEntryToIBlock(iBlock* iblock, DirEntry* dirEntSrc)
+{
+	// Operation result
+	TBool result = false;
+
+	if ((iblock != NULL) && (dirEntSrc != NULL))
+	{
+		unsigned int idx = 0;
+		TBool found = false;
+		// Iterates through the iBlock to find empty entry
+		while ((idx < iblock->m_size) && (!found))
+		{
+			// 0 represents free
+			if ((iblock->m_contents + idx) == 0)
+			{
+				found = true;
+			}
+			else
+			{
+				idx++;
+			}
+		}
+		// Resize contents if needed
+		if (!found)
+		{
+			// Reallocate bigger memory
+			iblock->m_contents = realloc(iblock->m_contents, iblock->m_size + 1);
+			iblock->m_size = iblock->m_size + 1;
+		}
+	}
+
+	return result;
 }

@@ -11,7 +11,7 @@
 
 // Checks the existence of a given path and assigns the found entry
 // Assumes non empty string
-DirEntry* 
+DirEntry*
 exists(char *pathname)
 {
 	// DirEntry to start search
@@ -88,7 +88,7 @@ exists(char *pathname)
 }
 
 // Searches and returns dirEntry block address of found entry, else 0
-unsigned int 
+unsigned int
 contains(char* token, DirEntry* searchDir)
 {
 	// Address of iblock of the element found (if found)
@@ -101,61 +101,40 @@ contains(char* token, DirEntry* searchDir)
 		if (searchDir->m_filetype == 0x02)
 		{
 			// iBlock being read
-			iBlock* blockToRead = NULL;
-			// Buffer which contains info from disk
-			unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-			// Update dirEntry
-			if (read_sector(searchDir->m_iBlockAddress, buffer) == EOpSuccess)
+			iBlock* blockToRead = loadIBlock(searchDir);
+			// If loaded correctly
+			if (blockToRead != NULL)
 			{
-				blockToRead = deserialize_iBlock(buffer);
-				// If deserialized correctly
-				if (blockToRead != NULL)
+				// Index of the array (starts at three because its at this index that start the entries)
+				unsigned short i = 3;
+				// Current content being read (block address)
+				unsigned int currContent = (unsigned int)(blockToRead->m_contents[i]);
+				// Found value?
+				TBool found = false;
+				// While not found and valid value and in bound value
+				while ((currContent != 0) && (!found) && (i < (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE)))
 				{
-					// Index of the array (starts at three because its at this index that start the entries)
-					unsigned short i = 3;
-					// Current content being read
-					unsigned int currContent = (unsigned int)(blockToRead->m_contents[i]);
-					// Found value?
-					TBool found = false;
-					// While not found and valid value and in bound value
-					while ((currContent != 0) && (!found) && (i <= 128))
+					// Loads dir entry
+					DirEntry* currDirEntry = loadDirEntry(currContent);
+					// Compares the name
+					if (strncmp(token, currDirEntry->m_name, sizeof(currDirEntry->m_name)) == 0)
 					{
-						// Clears buffer
-						memset(buffer, 0, sizeof(char) * SECTOR_SIZE);
-						// Update dirEntry
-						if (read_sector(currContent, buffer) == EOpSuccess)
-						{
-							DirEntry* currDirEntry = deserialize_DirEntry(buffer);
-							// Checks the name of the content
-							// If the name matches the token, then the result is found
-							if (strncmp(token, currDirEntry->m_name, sizeof(currDirEntry->m_name)) == 0)
-							{
-								iBlockOfFound = currDirEntry->m_ownAddress;
-								// Found
-								found = true;
-							}
-							// Else, we shuold look the next entry in the content
-							else
-							{
-								// Increments
-								i++;
-								// Updates current content
-								currContent = (unsigned int)(blockToRead->m_contents[i]);
-							}
-							// Free alocated memory
-							free(currDirEntry);
-						}
-						// To avoid infinite loop
-						else
-						{
-							// Increments
-							i++;
-						}
+						iBlockOfFound = currDirEntry->m_ownAddress;
+						// Found
+						found = true;
 					}
+					// Else, we shuold look the next entry in the content
+					else
+					{
+						// Increments
+						i++;
+						// Updates current content
+						currContent = (unsigned int)(blockToRead->m_contents[i]);
+					}
+					// Free alocated memory
+					free(currDirEntry);
 				}
 			}
-			// Free memory
-			free(buffer);
 		}
 	}
 
@@ -180,9 +159,9 @@ initialize()
 // Returns 0 if it does not exists
 unsigned short BlockAddToSectorAdd(unsigned short blockAddress)
 {
-	return ((((blockAddress * gp_superblock->m_sectorsPerBlock) + FIRST_BLOCK_SECTOR) < SECTORS_TOTAL)) ? 
-	(blockAddress * gp_superblock->m_sectorsPerBlock) + FIRST_BLOCK_SECTOR :
-	0;
+	return ((((blockAddress * gp_superblock->m_sectorsPerBlock) + FIRST_BLOCK_SECTOR) < SECTORS_TOTAL)) ?
+		(blockAddress * gp_superblock->m_sectorsPerBlock) + FIRST_BLOCK_SECTOR :
+		0;
 }
 
 // Reads block with address blockAdd from disk and adds all info read to buffer
