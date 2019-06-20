@@ -206,8 +206,6 @@ void writeBlock(unsigned short blockAddress, unsigned char* pBuffer)
 	// If sector address is valid, we read sector
 	if ((sectorAdd > 0) && (pBuffer != NULL))
 	{
-		pBuffer = malloc(SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
-
 		// Read the info from all sectors
 		unsigned short i;
 		for (i = 0; i < gp_superblock->m_sectorsPerBlock; i++)

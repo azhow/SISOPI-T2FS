@@ -34,7 +34,7 @@ serialize_iBlock(iBlock* s_iblock, unsigned char* buffer, unsigned int startOffs
 	}
 
 	// Copy info to buffer
-	memcpy(buffer + bufferOffset, s_iblock->m_contents + startOffset, (gp_superblock->m_sectorsPerBlock * SECTOR_SIZE) - bufferOffset);
+	memcpy(buffer + bufferOffset, s_iblock->m_contents + startOffset, s_iblock->m_size*sizeof(unsigned short));
 
 	return nextBlockAdd;
 }
