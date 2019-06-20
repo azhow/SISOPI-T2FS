@@ -6,6 +6,8 @@
 #define ROOT_ADDRESS 0
 // The first block starts at sector 17
 #define FIRST_BLOCK_SECTOR 17
+// Maximum number of sectors
+#define SECTORS_TOTAL 4000
 
 // Pragma directive to tell the compiler to not add any padding, so the struct has a predictable size 256
 #pragma pack(push, 1)

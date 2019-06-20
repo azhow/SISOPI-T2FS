@@ -3,14 +3,11 @@
 #include "TBool.h"
 #include "utils.h"
 #include "direntry.h"
+#include "superblock.h"
+#include "bitmap.h"
 #include "iblock.h"
 #include "apidisk.h"
 #include "openfiletable.h"
-
-// Definition of the current path
-// Current working path
-char g_currentPath[32] = "/";
-DirEntry* gp_currentDirEntry = NULL;
 
 // Checks the existence of a given path and assigns the found entry
 // Assumes non empty string
@@ -48,28 +45,13 @@ exists(char *pathname)
 			// Must be a valid address
 			if (gp_currentDirEntry->m_parentAddress != 0)
 			{
-				// Buffer which contains info from disk
-				unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-				if (read_sector(gp_currentDirEntry->m_parentAddress, buffer) == EOpSuccess)
-				{
-					foundDir = deserialize_DirEntry(buffer);
-				}
-				// Free allocated memory
-				free(buffer);
+				foundDir = loadDirEntry(gp_currentDirEntry->m_parentAddress);
 			}
 		}
 		// Absolute path
 		else
 		{
-			// Process from root
-			// Buffer which contains info from disk
-			unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-			if (read_sector(ROOT_ADDRESS, buffer) == EOpSuccess)
-			{
-				foundDir = deserialize_DirEntry(buffer);
-			}
-			// Free allocated memory
-			free(buffer);
+			foundDir = loadRoot();
 		}
 
 		// Does the current dir exists?
@@ -83,15 +65,7 @@ exists(char *pathname)
 			// If found
 			if (blockAddOfFound != 0)
 			{
-				// Buffer which contains info from disk
-				unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-				// Update dirEntry
-				if (read_sector(blockAddOfFound, buffer) == EOpSuccess)
-				{
-					foundDir = deserialize_DirEntry(buffer);
-				}
-				// Free allocated memory
-				free(buffer);
+				foundDir = loadDirEntry(blockAddOfFound);
 				// Updates currDir value
 				currDirExists = true;
 			}
@@ -107,15 +81,7 @@ exists(char *pathname)
 	// Input empty should be root directory, return always the root
 	else
 	{
-		// Buffer which contains info from disk
-		unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-		// Update dirEntry
-		if (read_sector(ROOT_ADDRESS, buffer) == EOpSuccess)
-		{
-			foundDir = deserialize_DirEntry(buffer);
-		}
-		// Free allocated memory
-		free(buffer);
+		foundDir = loadRoot();
 	}
 
 	return foundDir;
@@ -200,18 +166,68 @@ contains(char* token, DirEntry* searchDir)
 void
 initialize()
 {
-	// Current path is root
-	strcpy(g_currentPath, "/");
-	// Initialize superblock
-
-	// Buffer which contains info from disk
-	unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-	//read_sector(ROOT_ADDRESS, buffer);
-	// Current dirEntry of root
-	gp_currentDirEntry = deserialize_DirEntry(buffer);
-	// Free buffer
-	free(buffer);
+	// Initialize superblock (read from disk)
+	gp_superblock = loadSuperblock();
+	// Load root dir
+	gp_currentDirEntry = loadRoot();
 	// Initializes openfiletable
 	gp_openFileTable = calloc(1, sizeof(OpenFileTable));
-	// TODO initialize bitmap of free memory
+	// Initialize bitmap of free memory
+	loadBitmap();
+}
+
+// Translate block address to corresponding sector
+// Returns 0 if it does not exists
+unsigned short BlockAddToSectorAdd(unsigned short blockAddress)
+{
+	return ((((blockAddress * gp_superblock->m_sectorsPerBlock) + FIRST_BLOCK_SECTOR) < SECTORS_TOTAL)) ? 
+	(blockAddress * gp_superblock->m_sectorsPerBlock) + FIRST_BLOCK_SECTOR :
+	0;
+}
+
+// Reads block with address blockAdd from disk and adds all info read to buffer
+// Return has size = secPerBlock * SECTOR_SIZE
+unsigned char* readBlock(unsigned short blockAddress)
+{
+	// Buffer to save information
+	unsigned char* pBuffer = NULL;
+
+	// Sector address
+	unsigned short sectorAdd = BlockAddToSectorAdd(blockAddress);
+
+	// If sector address is valid, we read sector
+	if (sectorAdd > 0)
+	{
+		pBuffer = malloc(SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
+
+		// Read the info from all sectors
+		unsigned short i = 0;
+		for (i; i < gp_superblock->m_sectorsPerBlock; i++)
+		{
+			read_sector(sectorAdd + i, pBuffer + (i * SECTOR_SIZE));
+		}
+	}
+
+	return pBuffer;
+}
+
+// Writes info from pBuffer to block with address blockAdd
+// pBuffer must have size = secPerBlock * SECTOR_SIZE
+void writeBlock(unsigned short blockAddress, unsigned char* pBuffer)
+{
+	// Sector address
+	unsigned short sectorAdd = BlockAddToSectorAdd(blockAddress);
+
+	// If sector address is valid, we read sector
+	if ((sectorAdd > 0) && (pBuffer != NULL))
+	{
+		pBuffer = malloc(SECTOR_SIZE * gp_superblock->m_sectorsPerBlock);
+
+		// Read the info from all sectors
+		unsigned short i = 0;
+		for (i; i < gp_superblock->m_sectorsPerBlock; i++)
+		{
+			write_sector(sectorAdd + i, pBuffer + (i * SECTOR_SIZE));
+		}
+	}
 }

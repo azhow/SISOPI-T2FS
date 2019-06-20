@@ -3,6 +3,8 @@
 #include "TBool.h"
 #include "EOperationStatus.h"
 #include "apidisk.h"
+#include "apidisk.h"
+#include "superblock.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -75,13 +77,7 @@ int getcwd2(char *pathname, int size)
 			noSpaceLeft = true;
 		}
 		// Update dir
-		// Buffer which contains info from disk
-		unsigned char* buffer = malloc(sizeof(char) * SECTOR_SIZE);
-		if (read_sector(initialDir->m_parentAddress, buffer) == EOpSuccess)
-		{
-			initialDir = deserialize_DirEntry(buffer);
-		}
-		free(buffer);
+		initialDir = loadDirEntry(initialDir->m_parentAddress);
 	}
 
 	// If added all to string, the op was successfull

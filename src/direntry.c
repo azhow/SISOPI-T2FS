@@ -1,8 +1,13 @@
 #include "direntry.h"
 #include "utils.h"
+#include "apidisk.h"
+#include "bitmap.h"
+#include "superblock.h"
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+
+DirEntry* gp_currentDirEntry = NULL;
 
 // Serializes the DirEntry to write to disk
 // The buffer should have size == 256
@@ -95,4 +100,93 @@ deserialize_DirEntry(unsigned char* buffer)
 		sizeof(readDir->m_empty));
 
 	return readDir;
+}
+
+// Loads root directory
+DirEntry* loadRoot()
+{
+	// Reads from disk
+	DirEntry* root = NULL;
+
+	// Load from disk
+	root = loadDirEntry(ROOT_ADDRESS);
+
+	return root;
+}
+
+// Load direntry from blockAddress
+DirEntry* loadDirEntry(unsigned short blockAddress)
+{
+	// Loaded direntry
+	DirEntry* loadedDirEntry = NULL;
+
+	// Block read
+	unsigned char* pBuffer = readBlock(blockAddress);
+
+	// If buffer is valid
+	if (pBuffer != NULL)
+	{
+		loadedDirEntry = deserialize_DirEntry(pBuffer);
+	}
+
+	return loadedDirEntry;
+}
+
+// Saves DirEntry to block address (own address)
+void saveDirEntry(DirEntry* dirent)
+{
+	unsigned char* pBuffer = NULL;
+
+	serialize_DirEntry(dirent, pBuffer);
+
+	if (pBuffer != NULL)
+	{
+		writeBlock(dirent->m_ownAddress, pBuffer);
+	}
+}
+
+// Create DirEntry (assigns a free block)
+DirEntry* createDirEntry(char* name, char type, DirEntry* parent)
+{
+	// Created dir
+	DirEntry* createdDirEnt = NULL;
+
+	// If received info is ok
+	if ((name != NULL) && ((type == 0x01) || (type == 0x02)) && (parent != NULL))
+	{
+		// Allocate disk
+		unsigned short blockAddress = allocBlock();
+		// If address is valid
+		if (blockAddress != (gp_superblock->m_bitmapSize + 1))
+		{
+			createdDirEnt = calloc(1, sizeof(DirEntry));
+			strcpy(createdDirEnt->m_name, name);
+			createdDirEnt->m_filetype = type;
+			createdDirEnt->m_ownAddress = blockAddress;
+			createdDirEnt->m_parentAddress = parent->m_ownAddress;
+		}
+	}
+	// Creating root dir
+	else if ((name != NULL) && ((type == 0x01) || (type == 0x02)) && (parent == NULL))
+	{
+		unsigned short blockAddress = allocBlock();
+		// If address is valid
+		if (blockAddress != (gp_superblock->m_bitmapSize + 1))
+		{
+			createdDirEnt = calloc(1, sizeof(DirEntry));
+			strcpy(createdDirEnt->m_name, name);
+			createdDirEnt->m_filetype = type;
+			createdDirEnt->m_ownAddress = blockAddress;
+			createdDirEnt->m_parentAddress = 0;
+		}
+	}
+
+	// If created successfully
+	if (createdDirEnt != NULL)
+	{
+		// Save to disk
+		saveDirEntry(createdDirEnt);
+	}
+
+	return createdDirEnt;
 }

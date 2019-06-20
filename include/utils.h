@@ -12,13 +12,6 @@
 #include "EOperationStatus.h"
 #include "TBool.h"
 
-#define DISK_NUM_SECTORS 4000
-
-// Definition of the current path (should initialize it rather)
-// Current working path
-char g_currentPath[32];
-DirEntry* gp_currentDirEntry;
-
 // Checks the existence of a given path
 DirEntry* exists(char *pathname);
 
@@ -28,5 +21,16 @@ unsigned int contains(char* token, DirEntry* searchDir);
 
 // Initializes library
 void initialize();
+
+// Translate block address to corresponding sector
+unsigned short BlockAddToSectorAdd(unsigned short blockAddress);
+
+// Reads block with address blockAdd from disk and adds all info read to buffer
+// Return has size = secPerBlock * SECTOR_SIZE
+unsigned char* readBlock(unsigned short blockAddress);
+
+// Writes info from pBuffer to block with address blockAdd
+// pBuffer must have size = secPerBlock * SECTOR_SIZE
+void writeBlock(unsigned short blockAddress, unsigned char* pBuffer);
 
 #endif

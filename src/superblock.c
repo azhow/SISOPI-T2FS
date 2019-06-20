@@ -111,7 +111,7 @@ void initializeSuperblock(int secPerBlock)
 	psSuperblock->m_sectorsPerBlock = secPerBlock;
 	psSuperblock->m_rootAddress = FIRST_BLOCK_SECTOR;
 	// Total number of sectors in the disk - MBR - BITMAPsectors
-	const unsigned short cNumOfSectors = 4000 - 1 - 16;
+	const unsigned short cNumOfSectors = SECTORS_TOTAL - 1 - 16;
 	// Number of blocks in the map (take the lowest integer from the division this results in wasted space in the disk)
 	psSuperblock->m_bitmapSize = cNumOfSectors / secPerBlock;
 	

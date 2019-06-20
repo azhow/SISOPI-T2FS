@@ -9,8 +9,8 @@ typedef struct {
 	char m_name[32]; // Name of the file
 	char m_filetype; // Type of the file (0x01 -> file, 0x02 ->directory)
 	unsigned int m_size; // Size in bytes of the file (directories have 0)
-	unsigned short m_iBlockAddress; // Sector address of the iBlock
-	unsigned short m_parentAddress; // Sector address of the parent DirEntry
+	unsigned short m_iBlockAddress; // Block address of the iBlock
+	unsigned short m_parentAddress; // Block address of the parent DirEntry
 	unsigned short m_ownAddress; // Sector address of this DirEntry
 	unsigned short m_entries[106]; // Empty
 	char m_empty; // Empty (to align)
@@ -18,12 +18,19 @@ typedef struct {
 
 #pragma pack(pop)
 
-// Serializes the DirEntry to write to disk
-// The buffer should have size == 256
-void serialize_DirEntry(DirEntry* s_dirEntry, unsigned char* buffer);
+// global of current dir entry
+DirEntry* gp_currentDirEntry;
 
-// Deserializes the DirEntry to read from disk
-// The buffer should have size == 256
-DirEntry* deserialize_DirEntry(unsigned char* buffer);
+// Loads root directory
+DirEntry* loadRoot();
+
+// Create DirEntry (assigns a free block)
+DirEntry* createDirEntry(char* name, char type, DirEntry* parent);
+
+// Load direntry from blockAddress
+DirEntry* loadDirEntry(unsigned short blockAddress);
+
+// Saves DirEntry to block address (own address)
+void saveDirEntry(DirEntry* dirent);
 
 #endif

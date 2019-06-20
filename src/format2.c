@@ -25,30 +25,8 @@ int format2(int sectors_per_block)
 	{
 		// Initialize superblock (save to disk also)
 		initializeSuperblock(sectors_per_block);
-
-		/*
-		// Create root dir
-		DirEntry* pRoot = malloc(sizeof(DirEntry));
-		// Set the root attributes
-		strcpy(pRoot->m_name, "root");
-		pRoot->m_filetype = 0x02;
-		pRoot->m_ownAddress = 1;
-		pRoot->m_iBlockAddress = 2;
-		pRoot->m_parentAddress = 0;
-		pRoot->m_size = 0;
-		memset(pRoot->m_entries, 0, sizeof(pRoot->m_entries));
-		pRoot->m_empty = 0;
-
-		// Clears buffer
-		memset(pBuffer, 0, sizeof(SECTOR_SIZE));
-		serialize_DirEntry(pRoot, pBuffer);
-		// Write root directory to disk
-		write_sector(pRoot->m_ownAddress, pBuffer);
-
-		// Free buffer
-		free(pBuffer);
-		free(pRoot);
-		*/
+		// Create root dir and saves to disk
+		gp_currentDirEntry = createDirEntry("root", 0x02, NULL);
 	}
 
 	// Initializes library
