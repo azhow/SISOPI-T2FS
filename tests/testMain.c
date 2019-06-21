@@ -9,7 +9,6 @@ ETestStatus runAllTests()
 	ETestStatus overallTestStatus = TestSuccess;
 	// Current test variable
 	ETestStatus currentTestStatus = TestSuccess;
-
 	// format2 test
 	// Currently running test 
 	printf("format2_test:\t");
@@ -137,7 +136,7 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
-
+	/*
 	// bitmap test
 	// Currently running test 
 	printf("bitmap_test:\t");
@@ -153,7 +152,7 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
-
+	*/
 	// create2 test
 	// Currently running test 
 	printf("create2_test:\t");
@@ -185,6 +184,7 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
+	/*
 
 	// delete2 test
 	// Currently running test 
@@ -201,7 +201,7 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
-
+	*/
 	// If any test failed
 	if (overallTestStatus != 0)
 	{

@@ -6,26 +6,31 @@
 #include "apidisk.h"
 #include "superblock.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
-// Reverses string
-char *strrev(char *str)
+void printReverse(char str[], char* out)
 {
-	if (!str || !*str)
-		return str;
+	int length = strlen(str);
 
-	int i = strlen(str) - 1, j = 0;
+	// Traverse string from end 
+	int i, offset = 0;
+	for (i = length - 1; i >= 0; i--) {
+		if (str[i] == '/') {
 
-	char ch;
-	while (i > j)
-	{
-		ch = str[i];
-		str[i] = str[j];
-		str[j] = ch;
-		i--;
-		j++;
+			// putting the NULL character at the  
+			// position of space characters for 
+			// next iteration.          
+			str[i] = '\0';
+
+			// Start from next charatcer      
+			sprintf(out + offset, "%s/", &(str[i]) + 1);
+			offset = offset + strlen(&(str[i]) + 1) + 1;
+		}
 	}
-	return str;
+
+	// printing the last word 
+	sprintf(out + offset, "%s", str);
 }
 
 /*-----------------------------------------------------------------------------
@@ -61,7 +66,7 @@ int getcwd2(char *pathname, int size)
 
 	// Note that the string is built reverted
 	// While there are more directories and have not exploded the string size
-	while ((initialDir->m_parentAddress != 0x0) && (!noSpaceLeft))
+	while ((initialDir->m_ownAddress != 0x0) && (!noSpaceLeft))
 	{
 		// If there's space in the string
 		if ((strlen(initialDir->m_name) + strlen(path) + 2) < size)
@@ -85,10 +90,8 @@ int getcwd2(char *pathname, int size)
 	{
 		// Append separator to the end of path
 		strcat(path, "/");
-		// Reverses string
-		path = strrev(path);
-		// Copy to path
-		strcpy(pathname, path);
+
+		printReverse(path, pathname);
 		// Update result
 		opStatus = EOpSuccess;
 	}

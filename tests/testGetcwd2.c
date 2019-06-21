@@ -11,11 +11,11 @@ ETestStatus testGetcwd2()
 	// Test result
 	ETestStatus testResult = TestError;
 
-	char path[] = "/c/";
+	char path[] = "/batata/feijao/";
 	// To test against cwd 
-	char* pathTest = calloc(10, sizeof(char));
+	char* pathTest = calloc(30, sizeof(char));
 
-	if ((chdir2(path) == EOpSuccess) && (getcwd2(pathTest, 10) == EOpSuccess) && (strcmp(pathTest, path) == EOpSuccess))
+	if ((chdir2(path) == EOpSuccess) && (getcwd2(pathTest, 30) == EOpSuccess) && (strcmp(pathTest, path) == EOpSuccess))
 	{
 		char newPath[] = "/";
 		strcpy(pathTest, "/");
