@@ -25,11 +25,12 @@ int delete2 (char *filename)
 		initialize();
 	}
     // Search in current directory for file to delete
-    char* pathname = "./";
-	strcat(pathname, filename);
+    char* path = calloc(35, sizeof(char));
+	getcwd2(path, 35 * sizeof(char));
+	strcat(path, filename);
 
-	// DirEntry of the file we are searching for
-	DirEntry* searchEntry = exists(pathname);
+	// DirEntry of the entry we are searching for
+	DirEntry* searchEntry = exists(path);
 
 	// File exists
 	if (searchEntry != NULL)
@@ -39,11 +40,14 @@ int delete2 (char *filename)
         {
             int handle = 0;
             for (handle = 0; handle < 10; handle++){
-                DirEntry* dirEntry = gp_openFileTable->m_openFiles[handle]->m_openFileDirEntry;
-                // File is open
-                if ((strcmp(dirEntry->m_name, filename) == 0) && dirEntry->m_ownAddress == searchEntry->m_ownAddress)
+                if (gp_openFileTable->m_openFiles[handle] != NULL)
                 {
-                    close2(handle);
+                    DirEntry* dirEntry = gp_openFileTable->m_openFiles[handle]->m_openFileDirEntry;
+                    // File is open
+                    if ((strcmp(dirEntry->m_name, filename) == 0) && dirEntry->m_ownAddress == searchEntry->m_ownAddress)
+                    {
+                        close2(handle);
+                    }
                 }
             }
             // Free file blocks
@@ -53,7 +57,7 @@ int delete2 (char *filename)
             {
                 freeBlock(searchEntry->m_iBlock->m_contents[i]);
             }
-            searchEntry->m_iBlock->m_size =0;
+            searchEntry->m_iBlock->m_size = 0;
 
             result = EOpSuccess;
         }

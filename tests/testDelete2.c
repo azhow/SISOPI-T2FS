@@ -7,20 +7,26 @@ ETestStatus testDelete2()
 {
 	// Test result
 	ETestStatus testResult = TestError;
+
 	// Create file
 	char filename[] = "arquivo";
 	FILE2 handle = create2(filename);
 
-    // If entry is valid and exists
-    if (gp_openFileTable->m_openFiles[handle] != NULL)
-    {
-        // Delete file
-        if (delete2(filename) == 0)
+    // Handle is valid
+	if (handle != -1)
+	{
+        // If entry is valid and exists
+        if (gp_openFileTable->m_openFiles[handle] != NULL)
         {
-            // Check if the entry is still valid (should not be)
-            if (gp_openFileTable->m_openFiles[handle] == NULL)
+            DirEntry* file = gp_openFileTable->m_openFiles[handle]->m_openFileDirEntry;
+            // Delete file
+            if (delete2(filename) == 0)
             {
-                testResult = TestSuccess;
+                // Check if the entry is still valid (should not be)
+                if (file->m_size == 0)
+                {
+                    testResult = TestSuccess;
+                }
             }
         }
     }

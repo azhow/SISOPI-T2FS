@@ -18,7 +18,13 @@ ETestStatus testCreate2()
 		// If entry is valid and exists
 		if (gp_openFileTable->m_openFiles[handle] != NULL)
 		{
-			testResult = TestSuccess;
+			// Create same file
+			FILE2 handle2 = create2(filename);
+			// If entry is valid and exists
+			if (gp_openFileTable->m_openFiles[handle2] != NULL)
+			{
+				testResult = TestSuccess;
+			}
 		}
 	}
 	return testResult;

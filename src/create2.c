@@ -31,7 +31,8 @@ FILE2 create2 (char *filename)
 	// Returned handle
 	FILE2 returnHandle = -1;
 
-    char path[] = "./";
+    char* path = calloc(35, sizeof(char));
+	getcwd2(path, 35 * sizeof(char));
 	strcat(path, filename);
 
 	// DirEntry of the entry we are searching for
@@ -40,21 +41,18 @@ FILE2 create2 (char *filename)
 	// File exists
 	if (file != NULL)
 	{
-        // Erase content
-	    unsigned int size = file->m_iBlock->m_size;
-		int i;
-		for (i = 0; i < size; i++)
-		{
-			freeBlock(file->m_iBlock->m_contents[i]);
-		}
+		// Close file
+		delete2(filename);
 		file->m_size = 0;
-		file->m_iBlock->m_size =0;
 	}
 	// File does not exist
     else
     {
         // Create file
 		file = createDirEntry(filename, 0x01, gp_currentDirEntry);
+
+		addToIBlock(gp_currentDirEntry, file);
+		
     }
 
     returnHandle = addOpenFileToTable(file);
