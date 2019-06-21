@@ -8,7 +8,7 @@ ETestStatus testClosedir2()
 	// Test result
 	ETestStatus testResult = TestError;
 
-	char testPath[] = "/c";
+	char testPath[] = "/batata";
 
 	// Opens dir
 	DIR2 handle = opendir2(testPath);

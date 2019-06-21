@@ -10,7 +10,7 @@ ETestStatus testChdir2()
 	// Test result
 	ETestStatus testResult = TestError;
 
-	char path[] = "/c/";
+	char path[] = "/";
 	// To test against cwd 
 	char* pathTest = calloc(10, sizeof(char));
 	
