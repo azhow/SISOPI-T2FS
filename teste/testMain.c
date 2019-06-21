@@ -201,7 +201,6 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
-	/*
 
 	// delete2 test
 	// Currently running test 
@@ -218,7 +217,7 @@ ETestStatus runAllTests()
 	{
 		printf("SUCCESS\n");
 	}
-	*/
+
 	// If any test failed
 	if (overallTestStatus != 0)
 	{
