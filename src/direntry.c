@@ -30,12 +30,12 @@ serialize_DirEntry(DirEntry* s_dirEntry, unsigned short* usedBlocks)
 	// Add size to temp buffer
 	memcpy(
 		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype),
-		&s_dirEntry->m_size, 
+		&s_dirEntry->m_size,
 		sizeof(s_dirEntry->m_size));
 	// Add parentAddress to temp buffer
 	memcpy(
 		tempBuffer + sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size),
-		&s_dirEntry->m_parentAddress, 
+		&s_dirEntry->m_parentAddress,
 		sizeof(s_dirEntry->m_parentAddress));
 	// Add ownAddress to temp buffer
 	memcpy(
@@ -44,7 +44,7 @@ serialize_DirEntry(DirEntry* s_dirEntry, unsigned short* usedBlocks)
 		sizeof(s_dirEntry->m_ownAddress));
 
 	// Serializes iBlock contents
-	unsigned int needAnotherBlock = serialize_iBlock(s_dirEntry->m_iBlock, tempBuffer, 0, sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_parentAddress)*2);
+	unsigned int needAnotherBlock = serialize_iBlock(s_dirEntry->m_iBlock, tempBuffer, 0, sizeof(s_dirEntry->m_name) + sizeof(s_dirEntry->m_filetype) + sizeof(s_dirEntry->m_size) + sizeof(s_dirEntry->m_parentAddress) * 2);
 	if (needAnotherBlock != 0)
 	{
 		// There will be one byte remaining
@@ -64,7 +64,7 @@ serialize_DirEntry(DirEntry* s_dirEntry, unsigned short* usedBlocks)
 
 // Deserializes the DirEntry to read from disk
 // The buffer should have size == 256
-DirEntry* 
+DirEntry*
 deserialize_DirEntry(unsigned char* buffer)
 {
 	// Returned read dir
@@ -285,4 +285,44 @@ TBool addDirEntryToIBlock(iBlock* iblock, DirEntry* dirEntSrc)
 	}
 
 	return result;
+}
+
+// Is directory empty?
+TBool
+emptyDir(DirEntry* foundDir)
+{
+	TBool result = true;
+
+	unsigned int i = 0;
+	while (i < foundDir->m_iBlock->m_size)
+	{
+		result = result && (foundDir->m_iBlock->m_contents[i] == 0);
+		i++;
+	}
+
+	return result;
+}
+
+// Remove from directory
+void removeFromDir(DirEntry* parent, unsigned int addToRemove)
+{
+	// Should start from one
+	unsigned int i = 1;
+	TBool found = false;
+	while ((i < parent->m_iBlock->m_size) && (!found))
+	{
+		found = parent->m_iBlock->m_contents[i] == addToRemove;
+		i++;
+	}
+	if (found)
+	{
+		i--;
+		// Put the last one in this freed position if it is in the middle
+		if (i + 1 < parent->m_iBlock->m_size)
+		{
+			parent->m_iBlock->m_contents[i] = parent->m_iBlock->m_contents[parent->m_iBlock->m_size];
+		}
+		// Reduce size
+		parent->m_iBlock->m_size--;
+	}
 }

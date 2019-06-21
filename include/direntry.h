@@ -40,4 +40,10 @@ TBool addDirEntryToIBlock(iBlock* iblock, DirEntry* dirEntSrc);
 // Adds dirEntSrc entry to iBlock of dirEntDst (and create it if not already initialized)
 TBool addToIBlock(DirEntry* dirEntDst, DirEntry* dirEntSrc);
 
+// Is directory empty?
+TBool emptyDir(DirEntry* foundDir);
+
+// Remove from directory
+void removeFromDir(DirEntry* parent, unsigned int addToRemove);
+
 #endif

@@ -41,6 +41,23 @@ ETestStatus runAllTests()
 		printf("SUCCESS\n");
 	}
 
+	// rmdir2 test
+	// Currently running test 
+	printf("rmdir2_test:\t");
+	// Run the test
+	currentTestStatus = testRmdir2();
+	// Check if test runned successfully
+	if (currentTestStatus != TestSuccess)
+	{
+		overallTestStatus -= TestError;
+		printf("FAILED\n");
+	}
+	else
+	{
+		printf("SUCCESS\n");
+	}
+
+
 	// opendir2 test
 	// Currently running test 
 	printf("opendir2_test:\t");
